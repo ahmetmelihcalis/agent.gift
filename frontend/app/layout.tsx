@@ -9,6 +9,7 @@ const googleLike = Plus_Jakarta_Sans({
   weight: ["400", "500", "600", "700"],
 });
 
+
 export const metadata: Metadata = {
   title: "agent.gift",
   description: "Profil odaklı hediye araştırma ve öneri deneyimi.",

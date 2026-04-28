@@ -11,7 +11,7 @@ class InvestigationError(Exception):
 def extract_balanced_json_block(text: str) -> str:
     start = text.find("{")
     if start == -1:
-        raise InvestigationError("Ajanlar gecerli bir JSON cikti uretemedi.")
+        raise InvestigationError("Ajanlar geçerli bir JSON çıktısı üretemedi.")
 
     depth = 0
     in_string = False
@@ -37,7 +37,7 @@ def extract_balanced_json_block(text: str) -> str:
             if depth == 0:
                 return text[start : index + 1]
 
-    raise InvestigationError("Ajanlar gecerli bir JSON cikti uretemedi.")
+    raise InvestigationError("Ajanlar geçerli bir JSON çıktısı üretemedi.")
 
 
 def extract_json_payload(text: str) -> dict:

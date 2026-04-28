@@ -31,13 +31,13 @@ function finalizeMessage(message: string) {
 
 export function LogPanel({ logs, statusMessage, status }: LogPanelProps) {
   return (
-    <section className="sticky top-6 relative min-h-[320px] overflow-hidden rounded-[28px] border border-stone-300 bg-white/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
-      <div className="mb-5 flex items-center justify-between border-b border-stone-300 pb-4">
+    <section className="sticky top-6 relative min-h-[320px] overflow-hidden rounded-[28px] border border-stone-200 p-6">
+      <div className="mb-5 flex items-center justify-between border-b border-stone-200 pb-4">
         <div>
           <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">Canlı Notlar</p>
           <p className="mt-1 text-sm text-stone-500">{statusMessage}</p>
         </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-stone-300 bg-paper text-navy">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-stone-200 bg-[#f8f8f6] text-navy">
           <FileSearch className="h-5 w-5" />
         </div>
       </div>
@@ -52,10 +52,10 @@ export function LogPanel({ logs, statusMessage, status }: LogPanelProps) {
         {logs.map((log, index) => (
           <article
             key={`${log.agent}-${index}`}
-            className="animate-rise rounded-2xl border border-stone-300 bg-[linear-gradient(180deg,rgba(250,250,249,0.9),rgba(245,245,244,0.75))] px-4 py-4"
+            className="animate-rise rounded-[22px] border border-stone-200 bg-[linear-gradient(180deg,rgba(251,251,250,0.96),rgba(246,246,243,0.92))] px-4 py-4 shadow-[0_8px_22px_rgba(15,23,42,0.03)]"
             style={{ animationDelay: `${index * 120}ms` }}
           >
-            <p className="text-xs tracking-[0.16em] text-stone-400">
+            <p className="text-xs text-stone-400">
               {log.agent}
             </p>
             {log.role ? (

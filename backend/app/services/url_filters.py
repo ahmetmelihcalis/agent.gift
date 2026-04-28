@@ -13,126 +13,262 @@ GOOD_URL_MARKERS = (
     "/item/",
     "/p/",
     "/shop/p/",
-)
-
-BAD_URL_MARKERS = (
-    "/search",
-    "/s",
-    "/market/",
-    "/marketplace/",
-    "/collections/",
-    "/collection/",
-    "/category/",
-    "/categories/",
-    "/gift-guide",
-    "/gifts",
-    "/tag/",
-)
-
-BAD_QUERY_KEYS = {"k", "q", "query", "keyword", "search", "term"}
-FALLBACK_URL_MARKERS = (
-    "/collections/",
-    "/collection/",
-    "/market/",
-    "/marketplace/",
-    "/gift-guide",
-    "/gifts",
-    "/hediye",
+    "/urun/",
     "/urunler/",
 )
 
+COLLECTION_URL_MARKERS = (
+    "/collections/",
+    "/collection/",
+    "/market/",
+    "/marketplace/",
+    "/category/",
+    "/categories/",
+    "/kategori/",
+    "/hediye-setleri/",
+)
 
-def is_direct_product_url(raw_url: str) -> bool:
+EDITORIAL_URL_MARKERS = (
+    "/gift-guide",
+    "/editor",
+    "/editors-picks",
+    "/curated",
+    "/featured",
+    "/selections",
+    "/secimler",
+)
+
+BAD_QUERY_KEYS = {"k", "q", "query", "keyword", "search", "term"}
+BAD_PATH_MARKERS = ("/blog", "/blogs", "/news", "/stories", "/story", "/article", "/articles")
+BAD_DOMAIN_MARKERS = (
+    "instagram.",
+    "facebook.",
+    "x.com",
+    "twitter.",
+    "youtube.",
+    "tiktok.",
+    "pinterest.",
+    "reddit.",
+    "medium.",
+    "blogspot.",
+    "wordpress.",
+    "vogue.",
+    "gq.",
+    "wikipedia.",
+    "quora.",
+    "eksisozluk.",
+    "onedio.",
+)
+SHOPPING_SIGNAL_MARKERS = (
+    "sepete",
+    "sepet",
+    "stok",
+    "kargo",
+    "fiyat",
+    "indirim",
+    "ürün",
+    "ürünler",
+    "mağaza",
+    "magaza",
+    "shop",
+    "store",
+    "buy",
+    "cart",
+    "shopping",
+    "collection",
+    "kategori",
+    "hediye",
+    "satın al",
+    "online mağaza",
+    "online magaza",
+    "teslimat",
+)
+HOST_SHOP_MARKERS = (
+    "shop",
+    "store",
+    "market",
+    "boutique",
+    "hediye",
+    "gift",
+)
+
+
+def _parse_url(raw_url: str):
     try:
         parsed = urlparse(raw_url)
     except Exception:
-        return False
+        return None
 
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-        return False
+        return None
 
-    path = parsed.path.lower().strip()
-    query = parse_qs(parsed.query.lower())
-
-    if any(marker in path for marker in GOOD_URL_MARKERS):
-        return True
-
-    if any(marker in path for marker in BAD_URL_MARKERS):
-        return False
-
-    if any(key in BAD_QUERY_KEYS for key in query):
-        return False
-
-    if path in {"", "/"}:
-        return False
-
-    return True
-
-
-def is_fallback_collection_url(raw_url: str) -> bool:
-    try:
-        parsed = urlparse(raw_url)
-    except Exception:
-        return False
-
-    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-        return False
-
-    path = parsed.path.lower().strip()
-    query = parse_qs(parsed.query.lower())
-
-    if path in {"", "/"}:
-        return False
-
-    if any(key in BAD_QUERY_KEYS for key in query):
-        return False
-
-    if "/search" in path or path == "/s" or path.startswith("/s/"):
-        return False
-
-    if is_direct_product_url(raw_url):
-        return False
-
-    return any(marker in path for marker in FALLBACK_URL_MARKERS)
-
-
-def is_browseable_result_url(raw_url: str) -> bool:
-    try:
-        parsed = urlparse(raw_url)
-    except Exception:
-        return False
-
-    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-        return False
-
-    path = parsed.path.lower().strip()
-    query = parse_qs(parsed.query.lower())
-
-    if path in {"", "/"}:
-        return False
-
-    if any(key in BAD_QUERY_KEYS for key in query):
-        return False
-
-    if "/search" in path or path == "/s" or path.startswith("/s/"):
-        return False
-
-    return True
+    return parsed
 
 
 def domain_label(raw_url: str) -> str:
-    try:
-        host = urlparse(raw_url).netloc.lower()
-    except Exception:
+    parsed = _parse_url(raw_url)
+    if not parsed:
         return ""
+    return parsed.netloc.lower().removeprefix("www.")
 
-    host = host.removeprefix("www.")
-    return host
+
+def source_label_from_url(raw_url: str) -> str:
+    domain = domain_label(raw_url)
+    if not domain:
+        return "Online Mağaza"
+
+    root = domain.split(":", 1)[0]
+    if root.endswith(".com.tr"):
+        root = root[:-7]
+    elif root.endswith(".com"):
+        root = root[:-4]
+    elif root.endswith(".net"):
+        root = root[:-4]
+    elif root.endswith(".org"):
+        root = root[:-4]
+    elif root.endswith(".tr"):
+        root = root[:-3]
+
+    main = root.split(".")[-1].replace("-", " ").replace("_", " ").strip()
+    if not main:
+        return domain
+
+    return " ".join(part.capitalize() for part in main.split())
 
 
 def tokenize_text(text: str) -> set[str]:
     normalized = "".join(char.lower() if char.isalnum() else " " for char in text)
     return {token for token in normalized.split() if len(token) > 2}
+
+
+def is_shopping_like_hit(raw_url: str, title: str = "", content: str = "") -> bool:
+    parsed = _parse_url(raw_url)
+    if not parsed:
+        return False
+
+    host = parsed.netloc.lower()
+    path = parsed.path.lower().strip()
+    query = parse_qs(parsed.query.lower())
+    combined = f"{title} {content}".lower()
+
+    if any(marker in host for marker in BAD_DOMAIN_MARKERS):
+        return False
+
+    if any(key in BAD_QUERY_KEYS for key in query):
+        return False
+
+    if "/search" in path or path == "/s" or path.startswith("/s/"):
+        return False
+
+    if any(marker in path for marker in BAD_PATH_MARKERS):
+        return False
+
+    if any(marker in path for marker in GOOD_URL_MARKERS + COLLECTION_URL_MARKERS + EDITORIAL_URL_MARKERS):
+        return True
+
+    if any(marker in host for marker in HOST_SHOP_MARKERS) and any(marker in combined for marker in SHOPPING_SIGNAL_MARKERS):
+        return True
+
+    if any(marker in combined for marker in SHOPPING_SIGNAL_MARKERS):
+        return True
+
+    return False
+
+
+def is_direct_product_url(raw_url: str) -> bool:
+    parsed = _parse_url(raw_url)
+    if not parsed:
+        return False
+
+    path = parsed.path.lower().strip()
+    query = parse_qs(parsed.query.lower())
+
+    if any(key in BAD_QUERY_KEYS for key in query):
+        return False
+
+    if path in {"", "/"}:
+        return False
+
+    return any(marker in path for marker in GOOD_URL_MARKERS)
+
+
+def is_collection_url(raw_url: str) -> bool:
+    parsed = _parse_url(raw_url)
+    if not parsed:
+        return False
+
+    path = parsed.path.lower().strip()
+    query = parse_qs(parsed.query.lower())
+
+    if path in {"", "/"}:
+        return False
+
+    if any(key in BAD_QUERY_KEYS for key in query):
+        return False
+
+    if "/search" in path or path == "/s" or path.startswith("/s/"):
+        return False
+
+    return any(marker in path for marker in COLLECTION_URL_MARKERS)
+
+
+def is_editorial_pick_url(raw_url: str) -> bool:
+    parsed = _parse_url(raw_url)
+    if not parsed:
+        return False
+
+    path = parsed.path.lower().strip()
+    query = parse_qs(parsed.query.lower())
+
+    if path in {"", "/"}:
+        return False
+
+    if any(key in BAD_QUERY_KEYS for key in query):
+        return False
+
+    if "/search" in path or path == "/s" or path.startswith("/s/"):
+        return False
+
+    return any(marker in path for marker in EDITORIAL_URL_MARKERS)
+
+
+def is_boutique_store_url(raw_url: str, title: str = "", content: str = "") -> bool:
+    parsed = _parse_url(raw_url)
+    if not parsed:
+        return False
+
+    path = parsed.path.lower().strip()
+    query = parse_qs(parsed.query.lower())
+
+    if path in {"", "/"}:
+        return False
+
+    if any(key in BAD_QUERY_KEYS for key in query):
+        return False
+
+    if "/search" in path or path == "/s" or path.startswith("/s/"):
+        return False
+
+    if is_direct_product_url(raw_url) or is_collection_url(raw_url) or is_editorial_pick_url(raw_url):
+        return False
+
+    return is_shopping_like_hit(raw_url, title, content)
+
+
+def classify_shopping_hit_kind(raw_url: str, title: str = "", content: str = "") -> str | None:
+    if not is_shopping_like_hit(raw_url, title, content):
+        return None
+
+    if is_direct_product_url(raw_url):
+        return "direct_product"
+    if is_collection_url(raw_url):
+        return "collection"
+    if is_boutique_store_url(raw_url, title, content):
+        return "boutique_store"
+    if is_editorial_pick_url(raw_url):
+        return "editorial_pick"
+
+    return None
 
 
 def score_hit_for_product(product: ProductCandidate, hit: dict) -> int:
@@ -178,21 +314,40 @@ def _find_hit_by_url(raw_url: str, search_hits: list[dict]) -> dict | None:
     return None
 
 
+def _fallback_note(kind: str) -> tuple[str, str]:
+    if kind == "collection":
+        return (
+            "Bağlantı tek bir ürüne değil, seçili benzer seçeneklerin bulunduğu koleksiyon sayfasına açılır.",
+            "Bu öneri tekil ürün yerine ilgili seçenekleri bir araya getiren koleksiyon sayfasına yönlendirir.",
+        )
+    if kind == "boutique_store":
+        return (
+            "Bağlantı doğrudan ürün yerine ilgili seçeneklerin yer aldığı butik mağaza sayfasına açılır.",
+            "Bu öneri tek bir ürün yerine temaya uygun seçenekler sunan butik mağaza sayfasına yönlendirir.",
+        )
+    return (
+        "Bağlantı doğrudan ürün yerine mağazanın editör seçkisi sayfasına açılır.",
+        "Bu öneri tekil ürün yerine mağazanın editör seçkisi sayfasına yönlendirir.",
+    )
+
+
 def _normalize_fallback_candidate(product: ProductCandidate, hit: dict, score: int) -> ProductCandidate:
     raw_url = str(product.url)
     if is_direct_product_url(raw_url):
         return product
 
     hit_title = str(hit.get("title") or "").strip()
+    kind = str(hit.get("kind") or "collection")
+
     if hit_title and score < 8:
         product.name = hit_title
 
-    collection_note = "Bağlantı tek bir ürüne değil, seçili benzer seçeneklerin bulunduğu sayfaya açılır."
-    if collection_note not in product.caveats:
-        product.caveats = [collection_note, *product.caveats][:2]
+    caveat_text, comparison_text = _fallback_note(kind)
+    if caveat_text not in product.caveats:
+        product.caveats = [caveat_text, *product.caveats][:2]
 
     if score < 8:
-        product.comparison_note = "Bu öneri tekil ürün yerine ilgili seçenekleri bir araya getiren daha geniş bir sayfaya yönlendirir."
+        product.comparison_note = comparison_text
 
     return product
 
@@ -205,19 +360,30 @@ def repair_candidate_urls(
     for product in products:
         current_url = str(product.url)
         matched_hit = _find_hit_by_url(current_url, search_hits)
+        current_score = score_hit_for_product(product, matched_hit) if matched_hit else 0
+        best_hit, best_score = _best_hit_for_product(product, search_hits)
 
-        if not matched_hit and not (
-            is_direct_product_url(current_url) or is_fallback_collection_url(current_url)
+        if (
+            best_hit
+            and best_score > 0
+            and (not matched_hit or (best_score >= current_score + 4 and best_score >= 6))
         ):
-            best_hit, best_score = _best_hit_for_product(product, search_hits)
-            if best_hit and best_score > 0:
-                product.url = str(best_hit["url"])
-                matched_hit = best_hit
+            product.url = str(best_hit["url"])
+            matched_hit = best_hit
+            current_score = best_score
+        elif not matched_hit and not classify_shopping_hit_kind(current_url) and best_hit and best_score > 0:
+            product.url = str(best_hit["url"])
+            matched_hit = best_hit
+            current_score = best_score
 
         if matched_hit:
-            best_score = score_hit_for_product(product, matched_hit)
-            product = _normalize_fallback_candidate(product, matched_hit, best_score)
+            if current_score <= 4:
+                hit_title = str(matched_hit.get("title") or "").strip()
+                if hit_title:
+                    product.name = hit_title
+            product = _normalize_fallback_candidate(product, matched_hit, current_score)
             product.url = str(matched_hit["url"])
+            product.source = source_label_from_url(product.url)
 
         repaired.append(product)
 

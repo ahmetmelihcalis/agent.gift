@@ -88,38 +88,45 @@ async def _search_candidates(
         result = await asyncio.to_thread(search_tool.invoke, query)
         search_results.append({"query": query, "results": result})
 
-    direct_hits = flatten_search_hits(search_results)
+    direct_hits = flatten_search_hits(search_results, ("direct_product",))
     if len(direct_hits) < 2 and second_pass_queries:
         for query in second_pass_queries:
             result = await asyncio.to_thread(search_tool.invoke, query)
             search_results.append({"query": query, "results": result})
-        direct_hits = flatten_search_hits(search_results)
+        direct_hits = flatten_search_hits(search_results, ("direct_product",))
 
     search_hits = direct_hits
     if len(search_hits) < 2:
-        search_hits = flatten_search_hits(search_results, allow_fallback=True)
+        search_hits = flatten_search_hits(search_results, ("direct_product", "collection"))
     if len(search_hits) < 2:
         search_hits = flatten_search_hits(
-            search_results, allow_fallback=True, allow_browseable=True
+            search_results, ("direct_product", "collection", "boutique_store")
+        )
+    if len(search_hits) < 2:
+        search_hits = flatten_search_hits(
+            search_results, ("direct_product", "collection", "boutique_store", "editorial_pick")
         )
 
     if len(search_hits) < 1:
-        raise InvestigationError("Arama sonuçları yeterince güçlü bağlantı üretmedi.")
+        raise InvestigationError("Arama sonuçları yeterince güçlü ürün, koleksiyon veya mağaza bağlantısı üretmedi.")
 
     allowed_urls = {item["url"] for item in search_hits}
 
     prompt = f"""
 Sen Ürün Avcısısın.
-Kupa, tişört, jenerik mum, genel hediye kartı, Amazon arama sayfası, genel kategori sayfası ve tembel seçimleri reddet.
+Kupa, tişört, jenerik mum, genel hediye kartı, blog yazısı, sosyal medya bağlantısı ve tembel seçimleri reddet.
 Aşağıdaki profil ve arama sonuçlarını kullanarak tam 5 adet niş, şaşırtıcı hediye adayı seç.
 Yalnızca geçerli JSON dön.
 
 Kurallar:
 - Çıktı dili tamamen Türkçe olsun.
 - Türkçesi çevrilmiş gibi duran kalıplardan kaçın; doğal ve yaşayan bir dil kullan.
-- Ürünler gerçekten satın alınabilir ve karakterli olsun; mümkün olduğunda doğrudan ürün sayfasını tercih et.
-- Amazon arama sonucu, Etsy market sayfası, kategori sayfası, koleksiyon sayfası veya arama filtresi içeren link verme.
-- Doğrudan ürün sayfası yoksa, profile güçlü biçimde uyan ve ürünleri açıkça gösteren seçili koleksiyon ya da mağaza sayfasını kullanabilirsin.
+- Ürünler yalnızca internet alışveriş siteleri ve gerçek e-ticaret mağazalarından gelsin.
+- Blog, forum, sosyal medya, haber sitesi veya mağaza dışı editoryal içerik sitesi kullanma.
+- Mümkün olduğunda doğrudan ürün sayfasını tercih et.
+- Doğrudan ürün yoksa sırasıyla koleksiyon sayfası, butik mağaza sayfası ve mağazanın editör seçkisi sayfasını fallback olarak kullanabilirsin.
+- Seçtiğin adaylar kullanıcının seçtiği bütçe ve bölge kısıtına mümkün olduğunca uysun.
+- Arama filtresi içeren sayfaları kullanma.
 - Eğer kullandığın bağlantı tek bir ürüne değil, koleksiyon ya da liste sayfasına açılıyorsa ürün adı uydurma.
 - Böyle durumlarda `name` alanı sayfanın gerçekten sunduğu ürün grubunu ya da koleksiyon başlığını yansıtsın; görünmeyen bir ürün modeli, atkı, şarj cihazı ya da aksesuar icat etme.
 - `url` alanı, aşağıdaki arama hitlerinden birinin URL'si ile birebir aynı olmak zorunda.
@@ -165,12 +172,12 @@ JSON şeması:
     payload = await extract_or_repair_json(raw_text, settings)
     products_payload = payload.get("products")
     if not isinstance(products_payload, list) or not products_payload:
-        raise InvestigationError("Urun avcisi gecerli bir aday listesi uretemedi.")
+        raise InvestigationError("Ürün avcısı geçerli bir aday listesi üretemedi.")
 
     try:
         products = [ProductCandidate.model_validate(item) for item in products_payload[:5]]
     except ValidationError as exc:
-        raise InvestigationError("Urun adaylari beklenen formata uymuyor.") from exc
+        raise InvestigationError("Ürün adayları beklenen formata uymuyor.") from exc
 
     repaired_products = repair_candidate_urls(products, search_hits)
     filtered = filter_candidates_against_search_hits(repaired_products, allowed_urls)
@@ -187,7 +194,7 @@ JSON şeması:
         unique_products.append(product)
 
     if len(unique_products) < 3:
-        raise InvestigationError("Urun avcisi yeterli sayida anlamli aday üretemedi.")
+        raise InvestigationError("Ürün avcısı yeterli sayıda anlamlı aday üretemedi.")
 
     return unique_products[:5]
 
@@ -214,7 +221,9 @@ Kurallar:
 - products dizisi tam olarak 3 ürün içersin.
 - Neden bu seçimlerin klişe olmadığını hissettir.
 - Ürün açıklamaları kısa ama güçlü olsun.
-- Genel mağaza araması, kategori, market, koleksiyon veya arama sonucu linki kullanma.
+- Alışveriş sitesi dışındaki hiçbir kaynağı kullanma.
+- Doğrudan ürün linki yoksa yalnızca mevcut aday havuzundaki koleksiyon, butik mağaza veya editör seçkisi fallbacklerini kullan.
+- Seçimlerinde kullanıcının bütçe ve bölge tercihini koru.
 - Her ürün için `candidate_index` ver ve yalnızca mevcut adaylardan seçim yap.
 - Yeni ürün uydurma, link değiştirme, kaynak değiştirme.
 - Eğer aday bağlantısı tekil ürün değil de koleksiyon/liste sayfasıysa, bunu tek bir spesifik ürünmüş gibi anlatma.
@@ -258,7 +267,7 @@ JSON şeması:
     payload = await extract_or_repair_json(raw_text, settings)
     curated_payload = payload.get("products")
     if not isinstance(curated_payload, list) or not curated_payload:
-        raise InvestigationError("Kurator gecerli bir secim listesi uretemedi.")
+        raise InvestigationError("Küratör geçerli bir seçim listesi üretemedi.")
 
     hydrated_products = hydrate_curated_products(curated_payload, candidates)
     payload["products"] = fill_missing_curated_products(hydrated_products, candidates, 3)

@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     tavily_api_key: str | None = Field(default=None, alias="TAVILY_API_KEY")
     model_name: str = Field(default="openai/gpt-4.1-mini", alias="MODEL_NAME")
     tavily_search_depth: str = Field(default="basic", alias="TAVILY_SEARCH_DEPTH")
-    tavily_max_results: int = Field(default=8, alias="TAVILY_MAX_RESULTS")
+    tavily_max_results: int = Field(default=10, alias="TAVILY_MAX_RESULTS")
     openrouter_base_url: str = Field(
         default="https://fal.run/openrouter/router/openai/v1",
         alias="OPENROUTER_BASE_URL",

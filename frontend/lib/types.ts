@@ -31,6 +31,8 @@ export type ProductCard = {
 
 export type InvestigatePayload = {
   brief: string;
+  budget?: string;
+  region?: string;
   refine_instruction?: string;
 };
 

@@ -149,7 +149,7 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(224,231,255,0.28),transparent_34%),linear-gradient(180deg,#fbfbf9_0%,#f6f5f1_100%)]">
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 py-10 sm:px-10">
-        <header className="flex items-center justify-between border-b border-stone-200/90 pb-8">
+        <header className="flex items-center justify-between border-b border-[#1f3a68] pb-8">
           <div>
             <h1 className="text-[2rem] font-semibold tracking-[-0.04em] text-stone-900">
               agent.gift
@@ -171,31 +171,31 @@ export default function HomePage() {
                 hediye önerileri üretir, sürecin her adımını görünür kılar.
               </p>
               <div className="grid gap-4 text-left sm:grid-cols-3">
-                <div className="rounded-[24px] border border-stone-200 bg-white/88 px-5 py-5 shadow-[0_14px_32px_rgba(15,23,42,0.035)] backdrop-blur-sm">
-                  <p className="text-[11px] font-medium text-stone-400">1. Adım</p>
+                <div className="rounded-[24px] border border-[#1f3a68] bg-white/88 px-5 py-5 shadow-[0_14px_32px_rgba(15,23,42,0.035)] backdrop-blur-sm">
+                  <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">1. Adım</p>
                   <p className="mt-3 text-[0.96rem] leading-6 text-stone-700">Profil okunur ve öne çıkan davranış sinyalleri ayrıştırılır.</p>
                 </div>
-                <div className="rounded-[24px] border border-stone-200 bg-white/88 px-5 py-5 shadow-[0_14px_32px_rgba(15,23,42,0.035)] backdrop-blur-sm">
-                  <p className="text-[11px] font-medium text-stone-400">2. Adım</p>
+                <div className="rounded-[24px] border border-[#1f3a68] bg-white/88 px-5 py-5 shadow-[0_14px_32px_rgba(15,23,42,0.035)] backdrop-blur-sm">
+                  <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">2. Adım</p>
                   <p className="mt-3 text-[0.96rem] leading-6 text-stone-700">Standart seçenekler elenir, uygun ürünler taranır.</p>
                 </div>
-                <div className="rounded-[24px] border border-stone-200 bg-white/88 px-5 py-5 shadow-[0_14px_32px_rgba(15,23,42,0.035)] backdrop-blur-sm">
-                  <p className="text-[11px] font-medium text-stone-400">3. Adım</p>
+                <div className="rounded-[24px] border border-[#1f3a68] bg-white/88 px-5 py-5 shadow-[0_14px_32px_rgba(15,23,42,0.035)] backdrop-blur-sm">
+                  <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">3. Adım</p>
                   <p className="mt-3 text-[0.96rem] leading-6 text-stone-700">En güçlü öneriler kısa ve anlaşılır gerekçelerle sunulur.</p>
                 </div>
               </div>
             </div>
 
-            <section className="rounded-[32px] border border-stone-200 p-3 backdrop-blur-sm">
-              <div className="overflow-hidden rounded-[28px] border border-stone-200 bg-[#fcfcfb]">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 px-6 py-5">
+            <section className="rounded-[32px] border border-[#1f3a68] p-3 backdrop-blur-sm">
+              <div className="overflow-hidden rounded-[28px] border border-[#1f3a68] bg-[#fcfcfb]">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1f3a68] px-6 py-5">
                   <div>
-                    <p className="text-[1rem] font-medium text-stone-800">Yeni Araştırma</p>
+                    <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">Yeni Araştırma</p>
                     <p className="mt-1 text-sm text-stone-500">
                       Hedef profilin belirgin özelliklerini sisteme girin.
                     </p>
                   </div>
-                  <span className="rounded-full border border-stone-200 bg-white px-3 py-1 text-xs italic text-stone-500">
+                  <span className="rounded-full border border-[#1f3a68] bg-white px-3 py-1 text-xs italic text-stone-500">
                     Tek komut, çoklu ajan mimarisi
                   </span>
                 </div>
@@ -207,9 +207,9 @@ export default function HomePage() {
                   className="min-h-[230px] w-full resize-none border-none bg-transparent px-6 py-6 font-sans text-[1rem] leading-8 text-stone-800 outline-none placeholder:text-stone-400"
                 />
 
-                <div className="grid gap-6 border-t border-stone-200 px-6 py-5 lg:grid-cols-2 lg:gap-8">
+                <div className="grid gap-6 border-t border-[#1f3a68] px-6 py-5 lg:grid-cols-2 lg:gap-8">
                   <div>
-                    <p className="text-xs font-medium text-stone-400">Yönlendirme</p>
+                    <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">Yönlendirme</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {refineOptions.map((item) => (
                         <button
@@ -223,7 +223,7 @@ export default function HomePage() {
                           className={`rounded-full border px-3.5 py-2 text-sm transition-all duration-200 ${
                             activeRefineInstruction === item
                               ? "border-[#1f3a68] bg-[#1f3a68] text-white"
-                              : "border-stone-300 bg-white text-stone-600"
+                              : "border-[#1f3a68] bg-white text-stone-600"
                           }`}
                         >
                           {item}
@@ -232,7 +232,7 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="lg:text-right">
-                    <p className="text-xs font-medium text-stone-400">Arama bölgesi</p>
+                    <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">Arama bölgesi</p>
                     <div className="mt-3 flex flex-wrap gap-2 lg:justify-end">
                       {regionOptions.map((item) => (
                         <button
@@ -244,7 +244,7 @@ export default function HomePage() {
                           className={`rounded-full border px-3.5 py-2 text-sm transition-all duration-200 ${
                             regionMode === item
                               ? "border-[#1f3a68] bg-[#1f3a68] text-white"
-                              : "border-stone-300 bg-white text-stone-600"
+                              : "border-[#1f3a68] bg-white text-stone-600"
                           }`}
                         >
                           {item}
@@ -254,7 +254,7 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-4 border-t border-stone-200 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-4 border-t border-[#1f3a68] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
                   <div className="max-w-xl space-y-1 text-sm leading-6 text-stone-500">
                     <p>Daha isabetli sonuçlar için ilgi alanları ve kaçınılan şeyleri birlikte yazın.</p>
                     {activeRefineInstruction ? (
@@ -281,8 +281,8 @@ export default function HomePage() {
 
           <section className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:gap-10">
             <aside className="space-y-6">
-              <div className="rounded-[32px] border border-stone-300 p-5 backdrop-blur-sm">
-                <div className="mb-5 flex items-center justify-between border-b border-stone-300 pb-4">
+              <div className="rounded-[32px] border border-[#1f3a68] p-5 backdrop-blur-sm">
+                <div className="mb-5 flex items-center justify-between border-b border-[#1f3a68] pb-4">
                   <div>
                     <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">
                       Operasyon Paneli
@@ -305,7 +305,7 @@ export default function HomePage() {
 
             <div className="space-y-6">
               {errorMessage ? (
-                <div className="rounded-[24px] border border-stone-300 bg-[#fffaf7] p-5 text-sm leading-7 text-stone-700 shadow-[0_10px_28px_rgba(15,23,42,0.04)]">
+                <div className="rounded-[24px] border border-[#1f3a68] bg-[#fffaf7] p-5 text-sm leading-7 text-stone-700 shadow-[0_10px_28px_rgba(15,23,42,0.04)]">
                   <div className="flex items-center gap-3 text-navy">
                     <Sparkles className="h-4 w-4" />
                     <span className="font-medium">Sistem şu an sonuç üretemedi.</span>
@@ -316,25 +316,25 @@ export default function HomePage() {
 
               {result ? (
                 <div className="space-y-6">
-                  <section className="animate-soft-in rounded-[32px] border border-stone-200 p-6">
+                  <section className="animate-soft-in rounded-[32px] border border-[#1f3a68] p-6">
                     <div className="flex flex-wrap items-center gap-3">
-                      <p className="text-xs text-stone-400">
+                      <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">
                         Profil Özeti
                       </p>
-                      <span className="rounded-full border border-stone-300 px-3 py-1 text-xs text-stone-500">
+                      <span className="rounded-full border border-[#1f3a68] px-3 py-1 text-xs text-stone-500">
                         {result.profile_snapshot.inferred_persona}
                       </span>
                     </div>
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       <div>
-                        <p className="text-xs text-stone-400">
+                        <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">
                           Öne Çıkan İlgi Alanları
                         </p>
                         <div className="mt-3 flex flex-wrap gap-2">
                           {result.profile_snapshot.obsessions.map((item) => (
                             <span
                               key={item}
-                              className="rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-600"
+                              className="rounded-full border border-[#1f3a68] bg-[#eef4ff] px-3 py-1 text-xs text-stone-600"
                             >
                               {item}
                             </span>
@@ -342,14 +342,14 @@ export default function HomePage() {
                         </div>
                       </div>
                       <div>
-                        <p className="text-xs tracking-[0.18em] text-stone-400">
+                        <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">
                           İnce İpuçları
                         </p>
                         <div className="mt-3 flex flex-wrap gap-2">
                           {result.profile_snapshot.hidden_hooks.map((item) => (
                             <span
                               key={item}
-                              className="rounded-full bg-[#eef3fb] px-3 py-1 text-xs text-navy"
+                              className="rounded-full border border-[#1f3a68] bg-[#eef4ff] px-3 py-1 text-xs text-navy"
                             >
                               {item}
                             </span>
@@ -367,7 +367,7 @@ export default function HomePage() {
               ) : status === "streaming" ? (
                 <ResultSkeleton />
               ) : (
-                <section className="rounded-[28px] border border-dashed border-stone-300 bg-white/70 p-7 shadow-[0_10px_28px_rgba(15,23,42,0.03)]">
+                <section className="rounded-[28px] border border-dashed border-[#1f3a68] bg-white/70 p-7 shadow-[0_10px_28px_rgba(15,23,42,0.03)]">
                   <div className="flex items-center gap-3 text-navy">
                     <ArrowRight className="h-4 w-4" />
                     <p className="font-medium">İşlem sonuçları bu alanda listelenecektir.</p>

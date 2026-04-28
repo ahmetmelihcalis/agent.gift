@@ -133,10 +133,13 @@ Kurallar:
 - Eğer yalnızca koleksiyon veya seçili liste sayfası varsa, bunu ancak gerçekten profile uygun ürünleri bir araya getiren güçlü bir kaynak olarak kullan.
 - Aynı fikrin varyasyonlarını sıralama.
 - Çok genel "ödül plaketi", "standart poster", "jenerik aksesuar" gibi zayıf seçimleri ele.
-- Her adayda neden uygun olduğunu kısa ama sahici bir Türkçeyle açıkla.
+- Her ürün için neden uygun olduğunu kısa ve sade bir Türkçeyle açıkla.
+- Açıklamalar abartılı, şiirsel veya fazla reklam kokan bir tona kaymasın.
+- `why_it_matches` alanı en fazla 2 kısa cümle olsun.
 - `matched_signals` alanında ürünü eşleştiren 2-4 kısa sinyal yaz.
 - `caveats` alanında dikkat edilmesi gereken 0-2 kısa not yaz.
 - `comparison_note` alanında ürünü diğerlerinden ayıran tek cümlelik kısa ve doğal bir not ver.
+- Gereksiz metafor, büyük iddia ve süslü benzetmeler kullanma.
 
 Kullanıcı girdisi:
 {payload.brief}
@@ -220,7 +223,10 @@ Kurallar:
 - Metinler gerçek bir editörün kaleminden çıkmış gibi dursun; çevrilmiş, robotik ya da fazla süslü bir dil kullanma.
 - products dizisi tam olarak 3 ürün içersin.
 - Neden bu seçimlerin klişe olmadığını hissettir.
-- Ürün açıklamaları kısa ama güçlü olsun.
+- Ürün açıklamaları kısa, sade ve gündelik Türkçeyle yazılsın.
+- Gereksiz iddialı, aşırı editoryal veya dramatik cümleler kurma.
+- `editorial_intro` en fazla 4 cümle olsun ve anlaşılır bir dille yazılsın.
+- Her ürünün `why_it_matches` açıklaması en fazla 2 cümle olsun.
 - Alışveriş sitesi dışındaki hiçbir kaynağı kullanma.
 - Doğrudan ürün linki yoksa yalnızca mevcut aday havuzundaki koleksiyon, butik mağaza veya editör seçkisi fallbacklerini kullan.
 - Seçimlerinde kullanıcının bütçe ve bölge tercihini koru.
@@ -230,7 +236,7 @@ Kurallar:
 - profile_summary, editorial_intro ve markdown alanları akıcı Türkçe karakterlerle yazılsın.
 - `comparison_note`, `matched_signals` ve `caveats` alanlarını koru.
 - "şu ürün harika bir seçimdir" gibi yapay pazarlama kalıplarından kaçın.
-- profile_summary en fazla 2 cümle, editorial_intro ise akıcı ve doğal bir paragraf olsun.
+- profile_summary en fazla 2 cümle, editorial_intro ise akıcı ama ölçülü bir paragraf olsun.
 
 Kullanıcı girdisi:
 {payload.brief}

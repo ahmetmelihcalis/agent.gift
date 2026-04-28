@@ -45,7 +45,7 @@ const defaultAgents: AgentState[] = [
     name: "Mr. Decision",
     role: "Değerlendirme ve Raporlama Ajanı",
     specialty:
-      "Belirlenen adayları uygunluk ve profil eşleşmesi metriklerine göre inceler. En yüksek skora sahip üç öneriyi gerekçelendirerek sunar.",
+      "Belirlenen ürünleri uygunluk ve profil eşleşmesi metriklerine göre inceler. En yüksek skora sahip üç öneriyi gerekçelendirerek sunar.",
     status: "idle",
     headline: "",
   },

@@ -17,12 +17,12 @@ function finalizeMessage(message: string) {
       "Anlatılanların arasından kişinin asıl eğilimleri ayıklandı.",
     ],
     [
-      "Herkesin gördüğü ürünlere değil, daha ilginç adaylara bakıyorum.",
-      "Herkesin gördüğü ürünler yerine daha ilginç adaylar öne çıkarıldı.",
+      "Herkesin gördüğü ürünlere değil, daha ilginç ürünlere bakıyorum.",
+      "Herkesin gördüğü ürünler yerine daha ilginç ürünler öne çıkarıldı.",
     ],
     [
-      "Bulduğumuz adayları tartıp en yerinde üçlüyü seçiyorum.",
-      "Adaylar değerlendirildi ve en yerinde üçlü belirlendi.",
+      "Bulduğumuz ürünleri tartıp en yerinde üçlüyü seçiyorum.",
+      "Ürünler değerlendirildi ve en yerinde üçlü belirlendi.",
     ],
   ];
 

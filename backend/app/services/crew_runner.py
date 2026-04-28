@@ -344,7 +344,7 @@ async def stream_investigation(payload: InvestigateRequest, settings: Settings) 
         workflow,
         "product_hunter",
         "working",
-        "Sıradan seçenekleri eleyip daha güçlü adaylar aranıyor.",
+        "Sıradan seçenekleri eleyip daha güçlü ürünler aranıyor.",
     )
     yield format_sse(
         "agents",
@@ -359,7 +359,7 @@ async def stream_investigation(payload: InvestigateRequest, settings: Settings) 
             "agent": "Finder Fox",
             "role": "Ürün Tarama Ajanı",
             "agent_id": "product_hunter",
-            "message": "Herkesin gördüğü ürünlere değil, daha ilginç adaylara bakıyorum.",
+            "message": "Herkesin gördüğü ürünlere değil, daha ilginç ürünlere bakıyorum.",
         },
     )
 
@@ -383,7 +383,7 @@ async def stream_investigation(payload: InvestigateRequest, settings: Settings) 
             "agent": "Mr. Decision",
             "role": "Değerlendirme ve Raporlama Ajanı",
             "agent_id": "gift_selector",
-            "message": "Bulduğumuz adayları tartıp en yerinde üçlüyü seçiyorum.",
+            "message": "Bulduğumuz ürünleri tartıp en yerinde üçlüyü seçiyorum.",
         },
     )
 
@@ -410,7 +410,7 @@ async def stream_investigation(payload: InvestigateRequest, settings: Settings) 
             workflow,
             "product_hunter",
             "done",
-            "Güçlü adaylar toplandı, zayıf kalan seçenekler elendi.",
+            "Güçlü ürünler toplandı, zayıf kalan seçenekler elendi.",
         )
         yield format_sse(
             "agents",

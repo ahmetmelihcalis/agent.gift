@@ -19,20 +19,20 @@ AGENT_BLUEPRINTS = [
         "name": "Finder Fox",
         "role": "Ürün Tarama Ajanı",
         "specialty": "Sıradan seçenekleri eliyor, daha özgün ve alınabilir ürünler buluyor.",
-        "headline": "Herkesin önüne çıkanları değil, asıl ilginç adayları topluyor.",
+        "headline": "Herkesin önüne çıkanları değil, asıl ilginç ürünleri topluyor.",
     },
     {
         "id": "gift_selector",
         "name": "Mr. Decision",
         "role": "Değerlendirme ve Raporlama Ajanı",
         "specialty": "En güçlü üç öneriyi ayıklayıp son dokunuşu yapıyor.",
-        "headline": "Bulunan adayları tartıp en doğru önerileri hazırlıyor.",
+        "headline": "Bulunan ürünleri tartıp en doğru önerileri hazırlıyor.",
     },
 ]
 
 WORKFLOW_BLUEPRINTS = [
     {"id": "profile", "label": "Profil çıkarılıyor", "agent_id": "profile_analyst"},
-    {"id": "hunt", "label": "Adaylar aranıyor", "agent_id": "product_hunter"},
+    {"id": "hunt", "label": "Ürünler aranıyor", "agent_id": "product_hunter"},
     {"id": "select", "label": "Öneriler netleştiriliyor", "agent_id": "gift_selector"},
 ]
 

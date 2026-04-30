@@ -149,12 +149,12 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(224,231,255,0.28),transparent_34%),linear-gradient(180deg,#fbfbf9_0%,#f6f5f1_100%)]">
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 py-10 sm:px-10">
-        <header className="flex items-center justify-between border-b border-[#1f3a68] pb-8">
+        <header className="flex items-center justify-between border-b border-[#1f3a68] pb-8 bg-[linear-gradient(180deg,rgba(244,248,255,0.35),rgba(255,255,255,0))]">
           <div>
             <h1 className="text-[2rem] font-semibold tracking-[-0.04em] text-stone-900">
               agent.gift
             </h1>
-            <p className="mt-1 text-sm leading-6 text-stone-500">
+            <p className="mt-1 text-sm leading-6 text-navy/75">
               Yapay Zeka Ajanları Tabanlı Hediye Öneri Sistemi
             </p>
           </div>
@@ -171,31 +171,31 @@ export default function HomePage() {
                 hediye önerileri üretir, sürecin her adımını görünür kılar.
               </p>
               <div className="grid gap-4 text-left sm:grid-cols-3">
-                <div className="rounded-[24px] border border-[#1f3a68] bg-white/88 px-5 py-5 shadow-[0_14px_32px_rgba(15,23,42,0.035)] backdrop-blur-sm">
-                  <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">1. Adım</p>
+                <div className="rounded-[24px] border border-[#1f3a68] bg-[linear-gradient(180deg,rgba(233,241,255,0.95),rgba(255,255,255,0.96))] px-5 py-5 shadow-[0_16px_34px_rgba(31,58,104,0.08)] backdrop-blur-sm">
+                  <p className="text-[2.2rem] font-semibold tracking-[-0.04em] text-navy">1. Adım</p>
                   <p className="mt-3 text-[0.96rem] leading-6 text-stone-700">Profil okunur ve öne çıkan davranış sinyalleri ayrıştırılır.</p>
                 </div>
-                <div className="rounded-[24px] border border-[#1f3a68] bg-white/88 px-5 py-5 shadow-[0_14px_32px_rgba(15,23,42,0.035)] backdrop-blur-sm">
-                  <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">2. Adım</p>
+                <div className="rounded-[24px] border border-[#1f3a68] bg-[linear-gradient(180deg,rgba(233,241,255,0.95),rgba(255,255,255,0.96))] px-5 py-5 shadow-[0_16px_34px_rgba(31,58,104,0.08)] backdrop-blur-sm">
+                  <p className="text-[2.2rem] font-semibold tracking-[-0.04em] text-navy">2. Adım</p>
                   <p className="mt-3 text-[0.96rem] leading-6 text-stone-700">Standart seçenekler elenir, uygun ürünler taranır.</p>
                 </div>
-                <div className="rounded-[24px] border border-[#1f3a68] bg-white/88 px-5 py-5 shadow-[0_14px_32px_rgba(15,23,42,0.035)] backdrop-blur-sm">
-                  <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">3. Adım</p>
+                <div className="rounded-[24px] border border-[#1f3a68] bg-[linear-gradient(180deg,rgba(233,241,255,0.95),rgba(255,255,255,0.96))] px-5 py-5 shadow-[0_16px_34px_rgba(31,58,104,0.08)] backdrop-blur-sm">
+                  <p className="text-[2.2rem] font-semibold tracking-[-0.04em] text-navy">3. Adım</p>
                   <p className="mt-3 text-[0.96rem] leading-6 text-stone-700">En güçlü öneriler kısa ve anlaşılır gerekçelerle sunulur.</p>
                 </div>
               </div>
             </div>
 
-            <section className="rounded-[32px] border border-[#1f3a68] p-3 backdrop-blur-sm">
-              <div className="overflow-hidden rounded-[28px] border border-[#1f3a68] bg-[#fcfcfb]">
+            <section className="rounded-[32px] border border-[#1f3a68] bg-[linear-gradient(180deg,rgba(241,246,255,0.52),rgba(255,255,255,0.82))] p-3 shadow-[0_18px_38px_rgba(31,58,104,0.08)] backdrop-blur-sm">
+              <div className="overflow-hidden rounded-[28px] border border-[#1f3a68] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,255,0.96))]">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1f3a68] px-6 py-5">
                   <div>
-                    <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">Yeni Araştırma</p>
+                    <p className="text-[2.2rem] font-semibold tracking-[-0.04em] text-navy">Yeni Araştırma</p>
                     <p className="mt-1 text-sm text-stone-500">
                       Hedef profilin belirgin özelliklerini sisteme girin.
                     </p>
                   </div>
-                  <span className="rounded-full border border-[#1f3a68] bg-white px-3 py-1 text-xs italic text-stone-500">
+                  <span className="rounded-full border border-[#1f3a68] bg-[#eef4ff] px-3 py-1 text-xs italic text-navy/80">
                     Tek komut, çoklu ajan mimarisi
                   </span>
                 </div>
@@ -209,7 +209,7 @@ export default function HomePage() {
 
                 <div className="grid gap-6 border-t border-[#1f3a68] px-6 py-5 lg:grid-cols-2 lg:gap-8">
                   <div>
-                    <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">Yönlendirme</p>
+                    <p className="text-[1.7rem] font-semibold tracking-[-0.035em] text-navy">Yönlendirme</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {refineOptions.map((item) => (
                         <button
@@ -223,7 +223,7 @@ export default function HomePage() {
                           className={`rounded-full border px-3.5 py-2 text-sm transition-all duration-200 ${
                             activeRefineInstruction === item
                               ? "border-[#1f3a68] bg-[#1f3a68] text-white"
-                              : "border-[#1f3a68] bg-white text-stone-600"
+                              : "border-[#1f3a68] bg-[#f2f6ff] text-navy"
                           }`}
                         >
                           {item}
@@ -232,7 +232,7 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="lg:text-right">
-                    <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">Arama bölgesi</p>
+                    <p className="text-[1.7rem] font-semibold tracking-[-0.035em] text-navy">Arama bölgesi</p>
                     <div className="mt-3 flex flex-wrap gap-2 lg:justify-end">
                       {regionOptions.map((item) => (
                         <button
@@ -244,7 +244,7 @@ export default function HomePage() {
                           className={`rounded-full border px-3.5 py-2 text-sm transition-all duration-200 ${
                             regionMode === item
                               ? "border-[#1f3a68] bg-[#1f3a68] text-white"
-                              : "border-[#1f3a68] bg-white text-stone-600"
+                              : "border-[#1f3a68] bg-[#f2f6ff] text-navy"
                           }`}
                         >
                           {item}
@@ -255,7 +255,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="flex flex-col gap-4 border-t border-[#1f3a68] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="max-w-xl space-y-1 text-sm leading-6 text-stone-500">
+                  <div className="max-w-xl space-y-1 text-sm leading-6 text-navy/75">
                     <p>Daha isabetli sonuçlar için ilgi alanları ve kaçınılan şeyleri birlikte yazın.</p>
                     {activeRefineInstruction ? (
                       <p className="text-navy">Aktif yönlendirme: {activeRefineInstruction}</p>
@@ -281,7 +281,7 @@ export default function HomePage() {
 
           <section className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:gap-10">
             <aside className="space-y-6">
-              <div className="rounded-[32px] border border-[#1f3a68] p-5 backdrop-blur-sm">
+              <div className="rounded-[32px] border border-[#1f3a68] bg-[linear-gradient(180deg,rgba(244,248,255,0.5),rgba(255,255,255,0.88))] p-5 shadow-[0_16px_36px_rgba(31,58,104,0.07)] backdrop-blur-sm">
                 <div className="mb-5 flex items-center justify-between border-b border-[#1f3a68] pb-4">
                   <div>
                     <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">
@@ -316,7 +316,7 @@ export default function HomePage() {
 
               {result ? (
                 <div className="space-y-6">
-                  <section className="animate-soft-in rounded-[32px] border border-[#1f3a68] p-6">
+                  <section className="animate-soft-in rounded-[32px] border border-[#1f3a68] bg-[linear-gradient(180deg,rgba(245,248,255,0.58),rgba(255,255,255,0.96))] p-6 shadow-[0_16px_34px_rgba(31,58,104,0.06)]">
                     <div className="flex flex-wrap items-center gap-3">
                       <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">
                         Profil Özeti
@@ -367,7 +367,7 @@ export default function HomePage() {
               ) : status === "streaming" ? (
                 <ResultSkeleton />
               ) : (
-                <section className="rounded-[28px] border border-dashed border-[#1f3a68] bg-white/70 p-7 shadow-[0_10px_28px_rgba(15,23,42,0.03)]">
+                <section className="rounded-[28px] border border-dashed border-[#1f3a68] bg-[linear-gradient(180deg,rgba(244,248,255,0.72),rgba(255,255,255,0.9))] p-7 shadow-[0_12px_28px_rgba(31,58,104,0.06)]">
                   <div className="flex items-center gap-3 text-navy">
                     <ArrowRight className="h-4 w-4" />
                     <p className="font-medium">İşlem sonuçları bu alanda listelenecektir.</p>

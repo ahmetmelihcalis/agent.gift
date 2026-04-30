@@ -22,15 +22,53 @@ from .agent_state import (
     mark_agent_state,
     prepare_crewai_runtime,
 )
-from .curation import fill_missing_curated_products, hydrate_curated_products
+from .curation import diversify_curated_products, fill_missing_curated_products, hydrate_curated_products
 from .json_utils import InvestigationError, extract_or_repair_json
 from .search_helpers import (
+    build_fallback_candidates,
     build_search_queries,
     filter_candidates_against_search_hits,
     flatten_search_hits,
+    rank_candidates_for_profile,
 )
 from .streaming import format_sse
 from .url_filters import repair_candidate_urls
+
+
+def _fallback_result_payload(
+    request_payload: InvestigateRequest,
+    profile: PsychologicalProfile,
+    candidates: list[ProductCandidate],
+    filters: dict,
+    agents: list[AgentDescriptor],
+    workflow: list[WorkflowStep],
+) -> dict:
+    final_products = fill_missing_curated_products([], candidates, 3)
+    final_products = final_products[:3]
+
+    profile_summary = profile.inferred_persona or request_payload.brief[:160]
+    editorial_intro = (
+        "En yakın ürünler, kişinin öne çıkan ilgi alanları ve günlük kullanım ihtimali dikkate alınarak seçildi."
+    )
+    markdown = "\n".join(
+        [
+            "### Önerilen Ürünler",
+            *[f"- **{item['name']}**: {item['why_it_matches']}" for item in final_products],
+        ]
+    )
+
+    return {
+        "session_id": str(uuid.uuid4()),
+        "profile_summary": profile_summary,
+        "editorial_intro": editorial_intro,
+        "markdown": markdown,
+        "tone_mode": request_payload.tone_mode or filters["tone_mode"],
+        "applied_filters": filters,
+        "profile_snapshot": profile.model_dump(mode="json"),
+        "agents": [agent.model_dump(mode="json") for agent in agents],
+        "workflow": [step.model_dump(mode="json") for step in workflow],
+        "products": final_products,
+    }
 
 
 async def _generate_profile(payload: InvestigateRequest, settings: Settings) -> PsychologicalProfile:
@@ -132,10 +170,16 @@ Kurallar:
 - `url` alanı, aşağıdaki arama hitlerinden birinin URL'si ile birebir aynı olmak zorunda.
 - Eğer yalnızca koleksiyon veya seçili liste sayfası varsa, bunu ancak gerçekten profile uygun ürünleri bir araya getiren güçlü bir kaynak olarak kullan.
 - Aynı fikrin varyasyonlarını sıralama.
+- Mümkün olduğunda ürünleri farklı mağaza ve kaynaklardan seç; gerekmedikçe aynı siteden birden fazla ürün çıkarma.
 - Çok genel "ödül plaketi", "standart poster", "jenerik aksesuar" gibi zayıf seçimleri ele.
+- Kişinin mesleği veya baskın ilgi alanı teknoloji, yazılım, mühendislik ya da üretkenlik odaklıysa; sofra ürünü, kupa, bardak, tabak, dekoratif mutfak eşyası gibi düşük ilişkili ürünleri ancak kullanıcı açıkça istiyorsa düşün.
+- Meslek veya hobi sinyali güçlü olduğunda ürünün bununla doğrudan ilişkili olması gerekir; sadece genel kullanım ürünü olup sonradan açıklamayla bağ kurma.
 - Her ürün için neden uygun olduğunu kısa ve sade bir Türkçeyle açıkla.
 - Açıklamalar abartılı, şiirsel veya fazla reklam kokan bir tona kaymasın.
-- `why_it_matches` alanı en fazla 2 kısa cümle olsun.
+- `why_it_matches` tam olarak 1 kısa cümle olsun; uzatma, ikinci cümle yazma.
+- `why_it_matches` alanı doğrudan ürünün kendisine bağlı olsun; ürün adı telefon kılıfıysa açıklama kablo, termos, filtre veya alakasız başka bir nesneden söz etmesin.
+- Ürün ile açıklama arasında kategori kayması olmasın; klavye setini bardak, ekran koruyucuyu masa lambası, tabak setini masaüstü üretkenlik ekipmanı gibi göstermeye çalışma.
+- `why_it_matches` alanı tam olarak 1 kısa cümle olsun.
 - `matched_signals` alanında ürünü eşleştiren 2-4 kısa sinyal yaz.
 - `caveats` alanında dikkat edilmesi gereken 0-2 kısa not yaz.
 - `comparison_note` alanında ürünü diğerlerinden ayıran tek cümlelik kısa ve doğal bir not ver.
@@ -170,36 +214,50 @@ JSON şeması:
   ]
 }}
 """
-    response = await llm.ainvoke(prompt)
-    raw_text = response.content if hasattr(response, "content") else str(response)
-    payload = await extract_or_repair_json(raw_text, settings)
-    products_payload = payload.get("products")
-    if not isinstance(products_payload, list) or not products_payload:
-        raise InvestigationError("Ürün avcısı geçerli bir aday listesi üretemedi.")
+    fallback_candidates = build_fallback_candidates(search_hits, payload, profile, limit=5)
 
+    response_payload: dict = {}
     try:
-        products = [ProductCandidate.model_validate(item) for item in products_payload[:5]]
-    except ValidationError as exc:
-        raise InvestigationError("Ürün adayları beklenen formata uymuyor.") from exc
+        response = await llm.ainvoke(prompt)
+        raw_text = response.content if hasattr(response, "content") else str(response)
+        response_payload = await extract_or_repair_json(raw_text, settings)
+    except Exception:
+        response_payload = {}
+
+    products_payload = response_payload.get("products") if isinstance(response_payload, dict) else None
+
+    products: list[ProductCandidate] = []
+    if isinstance(products_payload, list) and products_payload:
+        try:
+            products = [ProductCandidate.model_validate(item) for item in products_payload[:5]]
+        except ValidationError:
+            products = []
+
+    if not products:
+        products = fallback_candidates
 
     repaired_products = repair_candidate_urls(products, search_hits)
     filtered = filter_candidates_against_search_hits(repaired_products, allowed_urls)
-    if len(filtered) >= 3:
-        return filtered[:5]
 
-    unique_products: list[ProductCandidate] = []
+    merged_products: list[ProductCandidate] = []
     seen_pairs: set[tuple[str, str]] = set()
-    for product in repaired_products:
-        pair = (product.name.strip().lower(), product.source.strip().lower())
+    for candidate in [*filtered, *repaired_products, *fallback_candidates]:
+        pair = (candidate.name.strip().lower(), candidate.source.strip().lower())
         if pair in seen_pairs:
             continue
         seen_pairs.add(pair)
-        unique_products.append(product)
+        merged_products.append(candidate)
 
-    if len(unique_products) < 3:
-        raise InvestigationError("Ürün avcısı yeterli sayıda anlamlı aday üretemedi.")
+    ranked_products = rank_candidates_for_profile(merged_products, payload, profile)
+    if len(ranked_products) >= 3:
+        return ranked_products[:5]
 
-    return unique_products[:5]
+    if fallback_candidates:
+        fallback_ranked = rank_candidates_for_profile(fallback_candidates, payload, profile)
+        if fallback_ranked:
+            return fallback_ranked[:5]
+
+    raise InvestigationError("Arama sonuçları yeterli sayıda anlamlı ürün üretmedi.")
 
 
 async def _curate_final(
@@ -224,9 +282,12 @@ Kurallar:
 - products dizisi tam olarak 3 ürün içersin.
 - Neden bu seçimlerin klişe olmadığını hissettir.
 - Ürün açıklamaları kısa, sade ve gündelik Türkçeyle yazılsın.
+- Prompttaki ana meslek ve ilgi alanlarıyla en doğrudan uyuşan ürünleri seç; uzak çağrışımlı ürünleri ele.
 - Gereksiz iddialı, aşırı editoryal veya dramatik cümleler kurma.
 - `editorial_intro` en fazla 4 cümle olsun ve anlaşılır bir dille yazılsın.
-- Her ürünün `why_it_matches` açıklaması en fazla 2 cümle olsun.
+- Her ürünün `why_it_matches` açıklaması tek cümle olsun.
+- `why_it_matches` ürün adındaki nesneye sadık kalsın; telefon kılıfını kablo, ekran koruyucuyu termos, koleksiyonu tekil aksesuar gibi anlatma.
+- Mümkün olduğunda üç ürün üç farklı kaynaktan gelsin; aynı siteyi yalnızca gerçekten güçlü bir gerekçe varsa tekrar kullan.
 - Alışveriş sitesi dışındaki hiçbir kaynağı kullanma.
 - Doğrudan ürün linki yoksa yalnızca mevcut aday havuzundaki koleksiyon, butik mağaza veya editör seçkisi fallbacklerini kullan.
 - Seçimlerinde kullanıcının bütçe ve bölge tercihini koru.
@@ -268,28 +329,40 @@ JSON şeması:
   ]
 }}
 """
-    response = await llm.ainvoke(prompt)
-    raw_text = response.content if hasattr(response, "content") else str(response)
-    payload = await extract_or_repair_json(raw_text, settings)
-    curated_payload = payload.get("products")
-    if not isinstance(curated_payload, list) or not curated_payload:
-        raise InvestigationError("Küratör geçerli bir seçim listesi üretemedi.")
+    fallback_payload = _fallback_result_payload(payload, profile, candidates, filters, agents, workflow)
+
+    response_payload: dict = {}
+    try:
+        response = await llm.ainvoke(prompt)
+        raw_text = response.content if hasattr(response, "content") else str(response)
+        response_payload = await extract_or_repair_json(raw_text, settings)
+    except Exception:
+        response_payload = {}
+
+    if not isinstance(response_payload, dict):
+        response_payload = {}
+
+    curated_payload = response_payload.get("products")
+    if not isinstance(curated_payload, list):
+        curated_payload = []
 
     hydrated_products = hydrate_curated_products(curated_payload, candidates)
-    payload["products"] = fill_missing_curated_products(hydrated_products, candidates, 3)
-    payload["session_id"] = str(uuid.uuid4())
-    payload["tone_mode"] = payload.get("tone_mode") or (payload.get("applied_filters", {}) or {}).get("tone_mode") or (payload.get("tone_mode") or filters["tone_mode"])
-    payload["applied_filters"] = filters
-    payload["profile_snapshot"] = profile.model_dump(mode="json")
-    payload["agents"] = [agent.model_dump(mode="json") for agent in agents]
-    payload["workflow"] = [step.model_dump(mode="json") for step in workflow]
-    try:
-        result = InvestigationResult.model_validate(payload)
-    except ValidationError as exc:
-        raise InvestigationError("Final rapor beklenen formata uymuyor.") from exc
+    diversified_products = diversify_curated_products(hydrated_products, candidates, 3)
+    final_products = fill_missing_curated_products(diversified_products, candidates, 3)
+    if len(final_products) < 3:
+        final_products = fallback_payload["products"]
 
-    if len(result.products) < 3:
-        raise InvestigationError("Küratör yeterli sayıda seçim tamamlayamadı.")
+    result_payload = {
+        **fallback_payload,
+        **{k: v for k, v in response_payload.items() if k != "products"},
+        "products": final_products[:3],
+        "tone_mode": response_payload.get("tone_mode") or fallback_payload["tone_mode"],
+    }
+
+    try:
+        result = InvestigationResult.model_validate(result_payload)
+    except ValidationError:
+        result = InvestigationResult.model_validate(fallback_payload)
 
     result.products = result.products[:3]
     return result

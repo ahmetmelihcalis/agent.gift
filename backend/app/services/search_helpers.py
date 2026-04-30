@@ -1,7 +1,42 @@
 import json
 
 from ..schemas import InvestigateRequest, ProductCandidate, PsychologicalProfile
-from .url_filters import classify_shopping_hit_kind
+from .url_filters import classify_shopping_hit_kind, source_label_from_url, tokenize_text
+
+
+def _persona_query_hints(text: str) -> list[str]:
+    lowered = text.lower()
+    hints: list[str] = []
+
+    if any(term in lowered for term in ["yazılım", "software", "developer", "mühendis", "engineer", "kod", "kodlama"]):
+        hints.extend([
+            "mekanik klavye aksesuarı",
+            "masaüstü üretkenlik aksesuarı",
+            "tech desk setup ürünü",
+            "koleksiyonluk teknoloji objesi",
+        ])
+
+    if any(term in lowered for term in ["formula 1", "f1", "otomobil", "araba", "motorsport", "yarış"]):
+        hints.extend([
+            "motorspor temalı masaüstü obje",
+            "formula 1 koleksiyon ürünü",
+            "otomobil tutkunu için butik ürün",
+        ])
+
+    if any(term in lowered for term in ["doktor", "hekim", "cerrah", "tıp", "medical"]):
+        hints.extend([
+            "medikal temalı şık masaüstü obje",
+            "doktor için işlevsel butik hediye",
+        ])
+
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for hint in hints:
+        key = hint.lower().strip()
+        if key and key not in seen:
+            seen.add(key)
+            deduped.append(hint)
+    return deduped
 
 
 def flatten_search_hits(
@@ -99,6 +134,8 @@ def build_search_queries(
 
     clauses = " ".join(part for part in [budget_primary, budget_style, region_market, region_hint, region_price] if part)
 
+    persona_hints = _persona_query_hints(base + " " + obsession + " " + hidden_hook)
+
     queries = [
         f"{obsession} hediye ürün satın al {clauses} e ticaret",
         f"{hidden_hook} butik mağaza hediye ürün {clauses}",
@@ -107,6 +144,9 @@ def build_search_queries(
         f"{base} özgün hediye ürün {clauses} online store",
         f"{base} gift product shop {budget_primary} {region_market} {region_hint}".strip(),
     ]
+
+    for hint in persona_hints:
+        queries.append(f"{hint} {clauses} alışveriş sitesi")
 
     if aversion:
         queries.append(
@@ -122,6 +162,99 @@ def build_search_queries(
             deduped.append(query.strip())
 
     return deduped
+
+
+
+
+def build_fallback_candidates(
+    search_hits: list[dict], payload: InvestigateRequest, profile: PsychologicalProfile, limit: int = 5
+) -> list[ProductCandidate]:
+    fallback: list[ProductCandidate] = []
+    signals = [*profile.obsessions[:2], *profile.hidden_hooks[:1]]
+    persona_hint = (profile.obsessions[:1] or profile.hidden_hooks[:1] or [profile.inferred_persona or payload.brief[:80]])[0]
+
+    for hit in search_hits:
+        title = str(hit.get("title") or "").strip()
+        url = str(hit.get("url") or "").strip()
+        if not title or not url:
+            continue
+
+        source = source_label_from_url(url)
+        kind = str(hit.get("kind") or "collection")
+        caveats: list[str] = []
+        if kind != "direct_product":
+            caveats.append("Bu bağlantı tekil ürün yerine benzer seçeneklerin bulunduğu bir sayfaya açılabilir.")
+
+        fallback.append(
+            ProductCandidate(
+                name=title,
+                why_it_matches=f"{persona_hint} tarafına yakın duran daha güvenli bir seçenek.",
+                price_label="Fiyat bilgisi değişken",
+                url=url,
+                source=source,
+                editorial_note="Arama sonuçlarından seçilen yakın eşleşme.",
+                matched_signals=signals[:3],
+                caveats=caveats,
+                comparison_note="Doğrudan eşleşme zayıf kaldığında güvenli fallback olarak öne çıktı.",
+            )
+        )
+
+        if len(fallback) >= limit:
+            break
+
+    return fallback
+
+
+
+
+def _candidate_relevance_score(product: ProductCandidate, payload: InvestigateRequest, profile: PsychologicalProfile) -> int:
+    context = " ".join([
+        payload.brief,
+        profile.inferred_persona,
+        " ".join(profile.obsessions),
+        " ".join(profile.hidden_hooks),
+        " ".join(profile.aversions),
+    ])
+    context_tokens = tokenize_text(context)
+    product_text = " ".join([
+        product.name,
+        product.why_it_matches,
+        product.editorial_note,
+        " ".join(product.matched_signals),
+    ])
+    product_tokens = tokenize_text(product_text)
+
+    score = len(context_tokens & product_tokens) * 2
+
+    lowered_name = product.name.lower()
+    generic_markers = (
+        "koleksiyon", "seçki", "secim", "ürün seçkisi", "platformu", "kategori", "mağaza", "magaza", "seti"
+    )
+    if any(marker in lowered_name for marker in generic_markers):
+        score -= 2
+
+    role_text = payload.brief.lower()
+    if any(term in role_text for term in ["yazılım", "developer", "software", "kod", "mühendis"]):
+        preferred = ("klavye", "keyboard", "desk", "masa", "switch", "teknoloji", "aksesuar", "monitor", "stand", "dock")
+        discouraged = ("bardak", "kupa", "tabak", "mutfak", "termos", "vazo", "mum")
+        if any(marker in lowered_name for marker in preferred):
+            score += 4
+        if any(marker in lowered_name for marker in discouraged):
+            score -= 6
+
+    kind = classify_shopping_hit_kind(str(product.url), product.name, product.why_it_matches)
+    if kind == 'direct_product':
+        score += 3
+    elif kind == 'collection':
+        score -= 1
+    elif kind in {'boutique_store', 'editorial_pick'}:
+        score += 0
+
+    return score
+
+
+def rank_candidates_for_profile(products: list[ProductCandidate], payload: InvestigateRequest, profile: PsychologicalProfile) -> list[ProductCandidate]:
+    return sorted(products, key=lambda product: _candidate_relevance_score(product, payload, profile), reverse=True)
 
 
 def filter_candidates_against_search_hits(

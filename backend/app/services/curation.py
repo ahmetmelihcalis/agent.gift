@@ -38,6 +38,69 @@ def hydrate_curated_products(
     return hydrated
 
 
+def _normalize_source(value: str) -> str:
+    return value.strip().lower()
+
+
+def diversify_curated_products(
+    curated_products: list[dict], candidates: list[ProductCandidate], target_count: int = 3
+) -> list[dict]:
+    if len(curated_products) <= 1:
+        return curated_products[:target_count]
+
+    candidate_pool = list(curated_products)
+    curated_names = {
+        item.get("name", "").strip().lower() for item in curated_products if item.get("name")
+    }
+    for candidate in candidates:
+        if candidate.name.strip().lower() not in curated_names:
+            candidate_pool.append(
+                {
+                    "name": candidate.name,
+                    "why_it_matches": candidate.why_it_matches,
+                    "price_label": candidate.price_label,
+                    "url": str(candidate.url),
+                    "source": candidate.source,
+                    "editorial_note": candidate.editorial_note,
+                    "matched_signals": candidate.matched_signals,
+                    "caveats": candidate.caveats,
+                    "comparison_note": candidate.comparison_note,
+                }
+            )
+
+    selected: list[dict] = []
+    used_sources: set[str] = set()
+    used_pairs: set[tuple[str, str]] = set()
+
+    for item in candidate_pool:
+        pair = (
+            item.get("name", "").strip().lower(),
+            _normalize_source(item.get("source", "")),
+        )
+        source = pair[1]
+        if pair in used_pairs or source in used_sources:
+            continue
+        used_pairs.add(pair)
+        used_sources.add(source)
+        selected.append(item)
+        if len(selected) >= target_count:
+            return selected
+
+    for item in candidate_pool:
+        if len(selected) >= target_count:
+            break
+        pair = (
+            item.get("name", "").strip().lower(),
+            _normalize_source(item.get("source", "")),
+        )
+        if pair in used_pairs:
+            continue
+        used_pairs.add(pair)
+        selected.append(item)
+
+    return selected[:target_count]
+
+
 def fill_missing_curated_products(
     curated_products: list[dict], candidates: list[ProductCandidate], target_count: int = 3
 ) -> list[dict]:
@@ -46,6 +109,31 @@ def fill_missing_curated_products(
         (item.get("name", "").strip().lower(), item.get("source", "").strip().lower())
         for item in filled
     }
+    used_sources = {item.get("source", "").strip().lower() for item in filled}
+
+    for candidate in candidates:
+        if len(filled) >= target_count:
+            break
+
+        pair = (candidate.name.strip().lower(), candidate.source.strip().lower())
+        if pair in used_pairs or pair[1] in used_sources:
+            continue
+
+        used_pairs.add(pair)
+        used_sources.add(pair[1])
+        filled.append(
+            {
+                "name": candidate.name,
+                "why_it_matches": candidate.why_it_matches,
+                "price_label": candidate.price_label,
+                "url": str(candidate.url),
+                "source": candidate.source,
+                "editorial_note": candidate.editorial_note,
+                "matched_signals": candidate.matched_signals,
+                "caveats": candidate.caveats,
+                "comparison_note": candidate.comparison_note,
+            }
+        )
 
     for candidate in candidates:
         if len(filled) >= target_count:
@@ -70,4 +158,4 @@ def fill_missing_curated_products(
             }
         )
 
-    return filled
+    return filled[:target_count]

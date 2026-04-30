@@ -31,13 +31,13 @@ function finalizeMessage(message: string) {
 
 export function LogPanel({ logs, statusMessage, status }: LogPanelProps) {
   return (
-    <section className="sticky top-6 relative min-h-[320px] overflow-hidden rounded-[28px] border border-[#1f3a68] p-6">
+    <section className="sticky top-6 relative min-h-[320px] overflow-hidden rounded-[28px] border border-[#1f3a68] bg-[linear-gradient(180deg,rgba(244,248,255,0.54),rgba(255,255,255,0.9))] p-6 shadow-[0_14px_32px_rgba(31,58,104,0.07)]">
       <div className="mb-5 flex items-center justify-between border-b border-[#1f3a68] pb-4">
         <div>
           <p className="text-2xl font-semibold tracking-[-0.03em] text-navy">Canlı Notlar</p>
           <p className="mt-1 text-sm text-stone-500">{statusMessage}</p>
         </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#1f3a68] bg-[#f8f8f6] text-navy">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#1f3a68] bg-[#e7f0ff] text-navy">
           <FileSearch className="h-5 w-5" />
         </div>
       </div>
@@ -52,7 +52,7 @@ export function LogPanel({ logs, statusMessage, status }: LogPanelProps) {
         {logs.map((log, index) => (
           <article
             key={`${log.agent}-${index}`}
-            className="animate-rise rounded-[22px] border border-[#1f3a68] bg-[linear-gradient(180deg,rgba(251,251,250,0.96),rgba(246,246,243,0.92))] px-4 py-4 shadow-[0_8px_22px_rgba(15,23,42,0.03)]"
+            className="animate-rise rounded-[22px] border border-[#1f3a68] bg-[linear-gradient(180deg,rgba(238,245,255,0.84),rgba(255,255,255,0.98))] px-4 py-4 shadow-[0_10px_24px_rgba(31,58,104,0.05)]"
             style={{ animationDelay: `${index * 120}ms` }}
           >
             <p className="text-xs font-medium text-navy">

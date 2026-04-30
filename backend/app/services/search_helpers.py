@@ -1,7 +1,25 @@
+import re
 import json
 
 from ..schemas import InvestigateRequest, ProductCandidate, PsychologicalProfile
 from .url_filters import classify_shopping_hit_kind, source_label_from_url, tokenize_text
+
+
+def _clean_product_title(title: str) -> str:
+    cleaned = " ".join(title.replace("…", "...").split()).strip()
+    cleaned = re.sub(r"\s*[:|\-]\s*(amazon|trendyol|hepsiburada|n11|mediamarkt|teknosa|turkcell|shopier|etsy|idefix|kitapyurdu|wraith esports|amazon\.com\.tr).*$", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"[a-z0-9-]+\.(com|com\.tr|net|org|tr).*$", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\s{2,}", " ", cleaned).strip(" -:|,")
+    while cleaned.endswith((" ...", "...", "..", ".")):
+        if cleaned.endswith(" ..."):
+            cleaned = cleaned[:-4].rstrip()
+        elif cleaned.endswith("..."):
+            cleaned = cleaned[:-3].rstrip()
+        elif cleaned.endswith(".."):
+            cleaned = cleaned[:-2].rstrip()
+        else:
+            cleaned = cleaned[:-1].rstrip()
+    return cleaned[:140].strip()
 
 
 def _persona_query_hints(text: str) -> list[str]:
@@ -160,7 +178,7 @@ def build_fallback_candidates(
     persona_hint = (profile.obsessions[:1] or profile.hidden_hooks[:1] or [profile.inferred_persona or payload.brief[:80]])[0]
 
     for hit in search_hits:
-        title = str(hit.get("title") or "").strip()
+        title = _clean_product_title(str(hit.get("title") or "").strip())
         url = str(hit.get("url") or "").strip()
         if not title or not url:
             continue

@@ -1,3 +1,4 @@
+import re
 from urllib.parse import parse_qs, urlparse
 
 from ..schemas import ProductCandidate
@@ -134,6 +135,25 @@ def source_label_from_url(raw_url: str) -> str:
         return domain
 
     return " ".join(part.capitalize() for part in main.split())
+
+
+
+
+def _clean_hit_title(title: str) -> str:
+    cleaned = " ".join(title.replace("…", "...").split()).strip()
+    cleaned = re.sub(r"\s*[:|\-]\s*(amazon|trendyol|hepsiburada|n11|mediamarkt|teknosa|turkcell|shopier|etsy|idefix|kitapyurdu|wraith esports|amazon\.com\.tr).*$", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"[a-z0-9-]+\.(com|com\.tr|net|org|tr).*$", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\s{2,}", " ", cleaned).strip(" -:|,")
+    while cleaned.endswith((" ...", "...", "..", ".")):
+        if cleaned.endswith(" ..."):
+            cleaned = cleaned[:-4].rstrip()
+        elif cleaned.endswith("..."):
+            cleaned = cleaned[:-3].rstrip()
+        elif cleaned.endswith(".."):
+            cleaned = cleaned[:-2].rstrip()
+        else:
+            cleaned = cleaned[:-1].rstrip()
+    return cleaned[:140].strip()
 
 
 def tokenize_text(text: str) -> set[str]:
@@ -286,7 +306,7 @@ def _normalize_fallback_candidate(product: ProductCandidate, hit: dict, score: i
     if is_direct_product_url(raw_url):
         return product
 
-    hit_title = str(hit.get("title") or "").strip()
+    hit_title = _clean_hit_title(str(hit.get("title") or "").strip())
     kind = str(hit.get("kind") or "collection")
 
     if hit_title and score < 8:
@@ -328,7 +348,7 @@ def repair_candidate_urls(
 
         if matched_hit:
             if current_score <= 4:
-                hit_title = str(matched_hit.get("title") or "").strip()
+                hit_title = _clean_hit_title(str(matched_hit.get("title") or "").strip())
                 if hit_title:
                     product.name = hit_title
             product = _normalize_fallback_candidate(product, matched_hit, current_score)

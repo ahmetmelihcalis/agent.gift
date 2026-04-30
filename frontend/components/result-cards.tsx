@@ -32,8 +32,8 @@ function ProductItem({ product, index, featured = false }: ProductItemProps) {
         <h3
           className={`mt-5 font-semibold leading-[1.14] tracking-[-0.03em] text-stone-900 ${
             featured
-              ? "max-w-[20ch] text-[1.55rem] sm:text-[1.85rem]"
-              : "max-w-[16ch] text-[1.2rem] sm:text-[1.35rem]"
+              ? "text-[1.55rem] sm:text-[1.85rem]"
+              : "text-[1.2rem] sm:text-[1.35rem]"
           }`}
         >
           {product.name}

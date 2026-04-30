@@ -106,20 +106,6 @@ def _budget_terms(budget: str | None) -> tuple[str, str]:
     return budget.strip(), ""
 
 
-def _region_terms(region: str | None) -> tuple[str, str, str]:
-    normalized = (region or "Türkiye").strip().lower()
-    if "global" in normalized:
-        return (
-            "global online store",
-            "international shipping",
-            "shopping site",
-        )
-
-    return (
-        "Türkiye online alışveriş sitesi",
-        "site:.tr",
-        "TL fiyat",
-    )
 
 
 def build_search_queries(
@@ -130,7 +116,7 @@ def build_search_queries(
     hidden_hook = profile.hidden_hooks[0] if profile.hidden_hooks else base
     aversion = profile.aversions[0] if profile.aversions else ""
     budget_primary, budget_style = _budget_terms(payload.budget)
-    region_market, region_hint, region_price = _region_terms(payload.region)
+    region_market, region_hint, region_price = ("Türkiye online alışveriş sitesi", "site:.tr", "TL fiyat")
 
     clauses = " ".join(part for part in [budget_primary, budget_style, region_market, region_hint, region_price] if part)
 

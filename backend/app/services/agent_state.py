@@ -97,7 +97,6 @@ def mark_agent_state(
 def build_filter_summary(payload: InvestigateRequest) -> dict[str, str | list[str]]:
     return {
         "budget": payload.budget or "Belirtilmedi",
-        "region": payload.region or "Global",
         "delivery_speed": payload.delivery_speed or "Esnek",
         "tone_mode": payload.tone_mode or "Editoryal",
         "avoid_categories": payload.avoid_categories or [],

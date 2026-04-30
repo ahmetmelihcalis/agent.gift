@@ -52,7 +52,6 @@ const defaultAgents: AgentState[] = [
 ];
 
 const refineOptions = ["Spesifik", "Bütçe Dostu", "Üst Segment", "Eğlence"] as const;
-const regionOptions = ["Türkiye", "Global"] as const;
 
 export default function HomePage() {
   const [brief, setBrief] = useState("");
@@ -63,12 +62,10 @@ export default function HomePage() {
   const [result, setResult] = useState<InvestigationResult | null>(null);
   const [agents, setAgents] = useState<AgentState[]>(defaultAgents);
   const [activeRefineInstruction, setActiveRefineInstruction] = useState("");
-  const [regionMode, setRegionMode] = useState<(typeof regionOptions)[number] | "">("Türkiye");
   const [isPending, startTransition] = useTransition();
 
   const buildPayload = (nextBrief: string, refineInstruction = ""): InvestigatePayload => ({
     brief: nextBrief,
-    region: regionMode || undefined,
     refine_instruction: refineInstruction || undefined,
   });
 
@@ -189,7 +186,7 @@ export default function HomePage() {
             <section className="rounded-[32px] border border-[#1f3a68] bg-[linear-gradient(180deg,rgba(241,246,255,0.52),rgba(255,255,255,0.82))] p-3 shadow-[0_18px_38px_rgba(31,58,104,0.08)] backdrop-blur-sm">
               <div className="overflow-hidden rounded-[28px] border border-[#1f3a68] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,255,0.96))]">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1f3a68] px-6 py-5">
-                  <div>
+                  <div className="max-w-3xl">
                     <p className="text-[2.2rem] font-semibold tracking-[-0.04em] text-navy">Yeni Araştırma</p>
                     <p className="mt-1 text-sm text-stone-500">
                       Hedef profilin belirgin özelliklerini sisteme girin.
@@ -207,7 +204,7 @@ export default function HomePage() {
                   className="min-h-[230px] w-full resize-none border-none bg-transparent px-6 py-6 font-sans text-[1rem] leading-8 text-stone-800 outline-none placeholder:text-stone-400"
                 />
 
-                <div className="grid gap-6 border-t border-[#1f3a68] px-6 py-5 lg:grid-cols-2 lg:gap-8">
+                <div className="border-t border-[#1f3a68] px-6 py-5">
                   <div>
                     <p className="text-[1.7rem] font-semibold tracking-[-0.035em] text-navy">Yönlendirme</p>
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -231,27 +228,6 @@ export default function HomePage() {
                       ))}
                     </div>
                   </div>
-                  <div className="lg:text-right">
-                    <p className="text-[1.7rem] font-semibold tracking-[-0.035em] text-navy">Arama bölgesi</p>
-                    <div className="mt-3 flex flex-wrap gap-2 lg:justify-end">
-                      {regionOptions.map((item) => (
-                        <button
-                          key={item}
-                          type="button"
-                          onClick={() =>
-                            setRegionMode((current) => (current === item ? "" : item))
-                          }
-                          className={`rounded-full border px-3.5 py-2 text-sm transition-all duration-200 ${
-                            regionMode === item
-                              ? "border-[#1f3a68] bg-[#1f3a68] text-white"
-                              : "border-[#1f3a68] bg-[#f2f6ff] text-navy"
-                          }`}
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 </div>
 
                 <div className="flex flex-col gap-4 border-t border-[#1f3a68] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
@@ -260,7 +236,6 @@ export default function HomePage() {
                     {activeRefineInstruction ? (
                       <p className="text-navy">Aktif yönlendirme: {activeRefineInstruction}</p>
                     ) : null}
-                    <p>Bölge: <span className="text-stone-700">{regionMode || "Seçilmedi"}</span></p>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-sm text-stone-400">{brief.trim().length} karakter</span>

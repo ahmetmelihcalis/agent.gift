@@ -175,100 +175,50 @@ def is_shopping_like_hit(raw_url: str, title: str = "", content: str = "") -> bo
     return False
 
 
-def is_direct_product_url(raw_url: str) -> bool:
+def _classify_url_kind(raw_url: str, title: str = "", content: str = "") -> str | None:
     parsed = _parse_url(raw_url)
     if not parsed:
-        return False
+        return None
 
     path = parsed.path.lower().strip()
     query = parse_qs(parsed.query.lower())
 
     if any(key in BAD_QUERY_KEYS for key in query):
-        return False
+        return None
 
-    if path in {"", "/"}:
-        return False
+    if path in {"", "/"} or "/search" in path or path == "/s" or path.startswith("/s/"):
+        return None
 
-    return any(marker in path for marker in GOOD_URL_MARKERS)
-
-
-def is_collection_url(raw_url: str) -> bool:
-    parsed = _parse_url(raw_url)
-    if not parsed:
-        return False
-
-    path = parsed.path.lower().strip()
-    query = parse_qs(parsed.query.lower())
-
-    if path in {"", "/"}:
-        return False
-
-    if any(key in BAD_QUERY_KEYS for key in query):
-        return False
-
-    if "/search" in path or path == "/s" or path.startswith("/s/"):
-        return False
-
-    return any(marker in path for marker in COLLECTION_URL_MARKERS)
-
-
-def is_editorial_pick_url(raw_url: str) -> bool:
-    parsed = _parse_url(raw_url)
-    if not parsed:
-        return False
-
-    path = parsed.path.lower().strip()
-    query = parse_qs(parsed.query.lower())
-
-    if path in {"", "/"}:
-        return False
-
-    if any(key in BAD_QUERY_KEYS for key in query):
-        return False
-
-    if "/search" in path or path == "/s" or path.startswith("/s/"):
-        return False
-
-    return any(marker in path for marker in EDITORIAL_URL_MARKERS)
-
-
-def is_boutique_store_url(raw_url: str, title: str = "", content: str = "") -> bool:
-    parsed = _parse_url(raw_url)
-    if not parsed:
-        return False
-
-    path = parsed.path.lower().strip()
-    query = parse_qs(parsed.query.lower())
-
-    if path in {"", "/"}:
-        return False
-
-    if any(key in BAD_QUERY_KEYS for key in query):
-        return False
-
-    if "/search" in path or path == "/s" or path.startswith("/s/"):
-        return False
-
-    if is_direct_product_url(raw_url) or is_collection_url(raw_url) or is_editorial_pick_url(raw_url):
-        return False
-
-    return is_shopping_like_hit(raw_url, title, content)
-
-
-def classify_shopping_hit_kind(raw_url: str, title: str = "", content: str = "") -> str | None:
     if not is_shopping_like_hit(raw_url, title, content):
         return None
 
-    if is_direct_product_url(raw_url):
+    if any(marker in path for marker in GOOD_URL_MARKERS):
         return "direct_product"
-    if is_collection_url(raw_url):
+    if any(marker in path for marker in COLLECTION_URL_MARKERS):
         return "collection"
-    if is_boutique_store_url(raw_url, title, content):
-        return "boutique_store"
-    if is_editorial_pick_url(raw_url):
+    if any(marker in path for marker in EDITORIAL_URL_MARKERS):
         return "editorial_pick"
+    return "boutique_store"
 
-    return None
+
+def is_direct_product_url(raw_url: str) -> bool:
+    return _classify_url_kind(raw_url) == "direct_product"
+
+
+def is_collection_url(raw_url: str) -> bool:
+    return _classify_url_kind(raw_url) == "collection"
+
+
+def is_editorial_pick_url(raw_url: str) -> bool:
+    return _classify_url_kind(raw_url) == "editorial_pick"
+
+
+def is_boutique_store_url(raw_url: str, title: str = "", content: str = "") -> bool:
+    return _classify_url_kind(raw_url, title, content) == "boutique_store"
+
+
+def classify_shopping_hit_kind(raw_url: str, title: str = "", content: str = "") -> str | None:
+    return _classify_url_kind(raw_url, title, content)
 
 
 def score_hit_for_product(product: ProductCandidate, hit: dict) -> int:

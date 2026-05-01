@@ -192,7 +192,7 @@ export default function HomePage() {
                       Hedef profilin belirgin özelliklerini sisteme girin.
                     </p>
                   </div>
-                  <span className="rounded-full border border-[#1f3a68] bg-[#eef4ff] px-3 py-1 text-xs italic text-navy/80">
+                  <span className="rounded-full border border-[#1f3a68] bg-[#eef4ff] px-3 py-1 text-xs text-navy/80">
                     Tek komut, çoklu ajan mimarisi
                   </span>
                 </div>

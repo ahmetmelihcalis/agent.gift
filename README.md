@@ -60,6 +60,13 @@ Sistem üç temel adımda çalışır:
 - Tavily Search API
 ### Frontend
 - Next.js 14, React 18, TypeScript, Tailwind CSS
+### Yapay Zeka ve Arama Katmanı
+- Projedeki temel dil modeli `MODEL_NAME` değişkeniyle belirlenir.
+- Varsayılan model `google/gemini-3.1-pro-preview` olarak ayarlanmıştır.
+- Model çağrıları `fal.ai` üzerindeki OpenRouter uyumlu uç nokta üzerinden yapılır.
+- `FAL_KEY`, bu model erişimi için yetkilendirme başlığı olarak kullanılır.
+- `TAVILY_API_KEY`, ürün ve mağaza aramalarını yapan Tavily katmanı için kullanılır.
+- Tavily, özellikle Türkiye odaklı e-ticaret sonuçlarını toplamak ve aday havuzu üretmek için kullanılır.
 
 ## Proje Yapısı
 ```text
@@ -108,6 +115,13 @@ TAVILY_MAX_RESULTS=15
 FRONTEND_ORIGIN=http://localhost:3000
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 ```
+
+Kısa Açıklama:
+- `FAL_KEY`: fal.ai üzerindeki model erişimi için kullanılır.
+- `TAVILY_API_KEY`: Tavily arama servisi için kullanılır.
+- `MODEL_NAME`: Kullanılacak yapay zeka modelini belirler.
+- `TAVILY_SEARCH_DEPTH`: Arama derinliğini belirler.
+- `TAVILY_MAX_RESULTS`: Tek aramada toplanacak maksimum sonuç sayısını belirler.
 
 ## Kurulum ve Çalıştırma
 
@@ -165,6 +179,14 @@ The system works in three basic steps:
 ### Frontend
 - Next.js 14, React 18, TypeScript, Tailwind CSS
 
+### AI and Search Layer
+- The primary language model is selected through the `MODEL_NAME` variable.
+- The default model is configured as `google/gemini-3.1-pro-preview`.
+- Model calls are routed through a `fal.ai` OpenRouter-compatible endpoint.
+- `FAL_KEY` is used as the authorization header for model access.
+- `TAVILY_API_KEY` is used for the Tavily product and store search layer.
+- Tavily is used to gather shopping results and build the candidate pool, with a Turkey-focused search strategy.
+
 ## Project Structure
 ```text
 agent.gift/
@@ -212,6 +234,13 @@ TAVILY_MAX_RESULTS=15
 FRONTEND_ORIGIN=http://localhost:3000
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 ```
+
+Quick Explanation:
+- `FAL_KEY`: Used for model access through fal.ai.
+- `TAVILY_API_KEY`: Used for the Tavily search service.
+- `MODEL_NAME`: Selects the AI model used by the project.
+- `TAVILY_SEARCH_DEPTH`: Defines search depth.
+- `TAVILY_MAX_RESULTS`: Defines the maximum number of results collected per search.
 
 ## Installation and Run
 

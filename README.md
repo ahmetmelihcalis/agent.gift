@@ -8,6 +8,7 @@ A multi-agent gift discovery app that turns a short profile brief into personali
 - [Türkçe](#türkçe)
   - [Proje Özeti](#proje-özeti)
   - [Özellikler](#özellikler)
+  - [Proje Görselleri](#proje-görselleri)
   - [Teknoloji](#teknoloji)
   - [Proje Yapısı](#proje-yapısı)
   - [Ortam Değişkenleri](#ortam-değişkenleri)
@@ -41,6 +42,16 @@ Sistem üç temel adımda çalışır:
 - Profil Analizi + Ürün Tarama + Final Değerlendirme Akışı
 - SSE Tabanlı Canlı Durum Akışı
 - Hata Durumlarında Fallback Aday Üretimi
+
+## Proje Görselleri
+
+![1](https://raw.githubusercontent.com/ahmetmelihcalis/agent.gift/refs/heads/main/images/1.jpeg)
+-
+![2](https://raw.githubusercontent.com/ahmetmelihcalis/agent.gift/refs/heads/main/images/2.jpeg)
+-
+![3](https://raw.githubusercontent.com/ahmetmelihcalis/agent.gift/refs/heads/main/images/3.jpeg)
+-
+![4](https://raw.githubusercontent.com/ahmetmelihcalis/agent.gift/refs/heads/main/images/4.jpeg)
 
 ## Teknoloji
 ### Backend
@@ -120,15 +131,6 @@ npm run dev
 - **The Analyst:** Kullanıcı profilini çözümler.
 - **Finder Fox:** Profile uygun ürünleri ve mağaza kaynaklarını tarar.
 - **Mr. Decision:** En güçlü üç öneriyi seçer ve açıklamaları son kez düzeltir.
-
-## Proje Görselleri
-
-```md
-![1]()
-![2]()
-![3]()
-![4]()
-```
 
 ## Notlar
 - Proje şu anda Türkiye odaklı sonuç üretmek üzere ayarlanmıştır.
@@ -231,15 +233,6 @@ npm run dev
 - **The Analyst:** Interprets the user profile.
 - **Finder Fox:** Scans products and store sources suitable for the profile.
 - **Mr. Decision:** Selects the strongest three recommendations and makes final corrections to the descriptions.
-
-## Project Visuals
-
-```md
-![1]()
-![2]()
-![3]()
-![4]()
-```
 
 ## Notes
 - The project is currently configured to produce Turkey-focused results.

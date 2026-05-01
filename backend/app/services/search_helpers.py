@@ -7,8 +7,11 @@ from .url_filters import classify_shopping_hit_kind, source_label_from_url, toke
 
 def _clean_product_title(title: str) -> str:
     cleaned = " ".join(title.replace("…", "...").split()).strip()
-    cleaned = re.sub(r"\s*[:|\-]\s*(amazon|trendyol|hepsiburada|n11|mediamarkt|teknosa|turkcell|shopier|etsy|idefix|kitapyurdu|wraith esports|amazon\.com\.tr).*$", "", cleaned, flags=re.IGNORECASE)
-    cleaned = re.sub(r"[a-z0-9-]+\.(com|com\.tr|net|org|tr).*$", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\s*[:|\-]\s*(amazon|trendyol|hepsiburada|n11|mediamarkt|teknosa|turkcell|shopier|etsy|idefix|kitapyurdu|wraith esports|welcomebaby|bitmeyenkartus|koçtaş|koctas|amazon\.com\.tr).*$", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\b[a-z0-9-]+\.(com|com\.tr|net|org|tr)\b.*$", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\s*[|:]\s*[^|:]*$", "", cleaned)
+    cleaned = re.sub(r"\s*[\-–—]\s*(en uygun fiyat(larla)?|sat[ıi]n al[ıi]n?[^-–—|:]*|fiyat[ıi]? ve özellikleri.*|özellikleri.*|kampanya.*|indirim.*)$", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\b(en uygun fiyat(larla)?|sat[ıi]n al[ıi]n?|fiyat[ıi]? ve özellikleri|özellikleri|kampanya|indirim)\b.*$", "", cleaned, flags=re.IGNORECASE)
     cleaned = re.sub(r"\s{2,}", " ", cleaned).strip(" -:|,")
     while cleaned.endswith((" ...", "...", "..", ".")):
         if cleaned.endswith(" ..."):

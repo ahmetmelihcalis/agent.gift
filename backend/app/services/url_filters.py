@@ -141,10 +141,13 @@ def source_label_from_url(raw_url: str) -> str:
 
 def _clean_hit_title(title: str) -> str:
     cleaned = " ".join(title.replace("…", "...").split()).strip()
-    cleaned = re.sub(r"\s*[:|\-]\s*(amazon|trendyol|hepsiburada|n11|mediamarkt|teknosa|turkcell|shopier|etsy|idefix|kitapyurdu|wraith esports|amazon\.com\.tr).*$", "", cleaned, flags=re.IGNORECASE)
-    cleaned = re.sub(r"[a-z0-9-]+\.(com|com\.tr|net|org|tr).*$", "", cleaned, flags=re.IGNORECASE)
-    cleaned = re.sub(r"\s*(kablolu|kablosuz|bluetooth|wireless|rgb|gaming|ultra|shine-through|türkçe q|ingilizce|red switch|blue switch|brown switch|hall effect|tmr hall).*$", "", cleaned, flags=re.IGNORECASE)
-    cleaned = re.sub(r"\s*,\s*(\d+[.,]?\d*\s*(ghz|mhz|mm|cm|inç|inch|tuşlu|keys?)?|\d+).*$", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\s*[:|\-]\s*(amazon|trendyol|hepsiburada|n11|mediamarkt|teknosa|turkcell|shopier|etsy|idefix|kitapyurdu|wraith esports|welcomebaby|bitmeyenkartus|koçtaş|koctas|amazon\.com\.tr).*$", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\b[a-z0-9-]+\.(com|com\.tr|net|org|tr)\b.*$", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\s*[|:]\s*[^|:]*$", "", cleaned)
+    cleaned = re.sub(r"\s*[\-–—]\s*(en uygun fiyat(larla)?|sat[ıi]n al[ıi]n?[^-–—|:]*|fiyat[ıi]? ve özellikleri.*|özellikleri.*|kampanya.*|indirim.*)$", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\b(en uygun fiyat(larla)?|sat[ıi]n al[ıi]n?|fiyat[ıi]? ve özellikleri|özellikleri|kampanya|indirim)\b.*$", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\s*(kablolu|kablosuz|bluetooth|wireless|rgb|gaming|ultra|shine-through|türkçe q|ingilizce|red switch|blue switch|brown switch|hall effect|tmr hall)\b.*$", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\s*,\s*(\d+[.,]?\d*\s*(ghz|mhz|mm|cm|inç|inch|tuşlu|keys?)?|\d+)\b.*$", "", cleaned, flags=re.IGNORECASE)
     cleaned = re.sub(r"\s{2,}", " ", cleaned).strip(" -:|,")
     while cleaned.endswith((" ...", "...", "..", ".")):
         if cleaned.endswith(" ..."):

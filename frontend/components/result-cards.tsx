@@ -82,17 +82,27 @@ export function ResultCards({ intro, products }: ResultCardsProps) {
         </div>
       </div>
 
-      <div className="space-y-5">
-        {featuredProduct ? <ProductItem product={featuredProduct} index={0} featured /> : null}
+      {products.length === 1 ? (
+        featuredProduct ? <ProductItem product={featuredProduct} index={0} featured /> : null
+      ) : products.length === 2 ? (
+        <div className="grid gap-5 lg:grid-cols-2">
+          {products.map((product, index) => (
+            <ProductItem key={`${product.name}-${index}`} product={product} index={index} />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-5">
+          {featuredProduct ? <ProductItem product={featuredProduct} index={0} featured /> : null}
 
-        {secondaryProducts.length ? (
-          <div className="grid gap-5 lg:grid-cols-2">
-            {secondaryProducts.map((product, index) => (
-              <ProductItem key={`${product.name}-${index}`} product={product} index={index + 1} />
-            ))}
-          </div>
-        ) : null}
-      </div>
+          {secondaryProducts.length ? (
+            <div className="grid gap-5 lg:grid-cols-2">
+              {secondaryProducts.map((product, index) => (
+                <ProductItem key={`${product.name}-${index}`} product={product} index={index + 1} />
+              ))}
+            </div>
+          ) : null}
+        </div>
+      )}
     </section>
   );
 }

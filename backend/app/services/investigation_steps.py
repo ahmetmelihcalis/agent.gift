@@ -101,6 +101,82 @@ JSON şeması:
         return products
 
 
+async def validate_final_product_explanations(
+    payload: InvestigateRequest,
+    profile: PsychologicalProfile,
+    products: list[dict],
+    settings: Settings,
+) -> list[dict]:
+    if not products:
+        return products
+
+    llm = build_chat_llm(settings, temperature=0)
+    prompt = f"""
+Aşağıdaki ürünler için ürün adı ile açıklama uyumunu denetle.
+Yalnızca geçerli JSON dön.
+
+Kurallar:
+- Çıktı dili tamamen Türkçe olsun.
+- Ürün adı ve açıklama aynı nesneyi, aynı kategoriyi ve aynı kullanım tipini anlatmalı.
+- Ürün adı klavye ise kitap, tablo, bardak, kablo, araç aksesuarı gibi başka bir nesneyi anlatan açıklamayı tutarsız say.
+- Ürün adı kitap ise klavye, LEGO, araç aksesuarı, masa lambası gibi başka bir nesneyi anlatan açıklamayı tutarsız say.
+- Ürün adı tablo veya dekor ürünü ise üretkenlik aksesuarı gibi anlatma.
+- Tutarsız bulduğun açıklamaları ürün adına sadık kalarak yeniden yaz.
+- `why_it_matches` en fazla 1 kısa cümle olsun.
+- `editorial_note` en fazla 1 kısa cümle olsun.
+- Kısa, sade ve doğrudan ürünün kendisine bağlı bir dil kullan.
+
+Kullanıcı girdisi:
+{payload.brief}
+
+Psikolojik profil:
+{profile.model_dump_json(indent=2)}
+
+Ürünler:
+{json.dumps(products, ensure_ascii=False, indent=2)}
+
+JSON şeması:
+{{
+  "products": [
+    {{
+      "name": "string",
+      "is_consistent": true,
+      "why_it_matches": "string",
+      "editorial_note": "string"
+    }}
+  ]
+}}
+"""
+
+    try:
+        response = await llm.ainvoke(prompt)
+        raw_text = response.content if hasattr(response, "content") else str(response)
+        validation_payload = await extract_or_repair_json(raw_text, settings)
+        validated_products = validation_payload.get("products")
+        if not isinstance(validated_products, list):
+            return products
+
+        validated_by_name = {
+            str(item.get("name") or "").strip().lower(): item
+            for item in validated_products
+            if isinstance(item, dict) and item.get("name")
+        }
+
+        normalized: list[dict] = []
+        for product in products:
+            key = str(product.get("name") or "").strip().lower()
+            validated = validated_by_name.get(key, {})
+            updated = dict(product)
+            if isinstance(validated.get("why_it_matches"), str) and validated.get("why_it_matches", "").strip():
+                updated["why_it_matches"] = validated["why_it_matches"].strip()
+            if isinstance(validated.get("editorial_note"), str) and validated.get("editorial_note", "").strip():
+                updated["editorial_note"] = validated["editorial_note"].strip()
+            normalized.append(updated)
+        return normalized
+    except Exception:
+        return products
+
+
 def build_fallback_result_payload(
     request_payload: InvestigateRequest,
     profile: PsychologicalProfile,
@@ -408,11 +484,17 @@ JSON şeması:
         final_products[:3],
         settings,
     )
+    validated_products = await validate_final_product_explanations(
+        payload,
+        profile,
+        rewritten_products[:3],
+        settings,
+    )
 
     result_payload = {
         **fallback_payload,
         **{k: v for k, v in response_payload.items() if k != "products"},
-        "products": rewritten_products[:3],
+        "products": validated_products[:3],
         "tone_mode": response_payload.get("tone_mode") or fallback_payload["tone_mode"],
     }
 

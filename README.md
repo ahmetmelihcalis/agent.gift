@@ -128,6 +128,8 @@ npm run dev
 ```
 
 ## Nasıl Çalışır?
+Bu proje, 3 ajandan oluşan çoklu ajan mimarisiyle çalışır. Aşağıdaki ajanlar akışın farklı aşamalarında görev alır:
+
 - **The Analyst:** Kullanıcı profilini çözümler.
 - **Finder Fox:** Profile uygun ürünleri ve mağaza kaynaklarını tarar.
 - **Mr. Decision:** En güçlü üç öneriyi seçer ve açıklamaları son kez düzeltir.
@@ -230,6 +232,8 @@ npm run dev
 ```
 
 ## How It Works?
+This project runs on a multi-agent architecture consisting of 3 agents. The agents below are responsible for different stages of the flow:
+
 - **The Analyst:** Interprets the user profile.
 - **Finder Fox:** Scans products and store sources suitable for the profile.
 - **Mr. Decision:** Selects the strongest three recommendations and makes final corrections to the descriptions.

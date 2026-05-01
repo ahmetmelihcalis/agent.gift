@@ -47,7 +47,7 @@ Sistem üç temel adımda çalışır:
 
 ![1](https://raw.githubusercontent.com/ahmetmelihcalis/agent.gift/refs/heads/main/images/1.jpeg)
 -
-![2](https://raw.githubusercontent.com/ahmetmelihcalis/agent.gift/refs/heads/main/images/2.jpeg)
+![2](https://raw.githubusercontent.com/ahmetmelihcalis/agent.gift/e1cb29f3b51ce128619d61108c8cdf4acb4d0c9d/images/2.jpeg)
 -
 ![3](https://raw.githubusercontent.com/ahmetmelihcalis/agent.gift/refs/heads/main/images/3.jpeg)
 -

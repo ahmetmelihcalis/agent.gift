@@ -2,7 +2,56 @@ import re
 import json
 
 from ..schemas import InvestigateRequest, ProductCandidate, PsychologicalProfile
+
 from .url_filters import classify_shopping_hit_kind, source_label_from_url, tokenize_text
+
+
+def _dedupe_phrases(values: list[str]) -> list[str]:
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        cleaned = " ".join(str(value or "").split()).strip()
+        key = cleaned.lower()
+        if cleaned and key not in seen:
+            seen.add(key)
+            deduped.append(cleaned)
+    return deduped
+
+
+def _profile_signal_phrases(payload: InvestigateRequest, profile: PsychologicalProfile) -> list[str]:
+    return _dedupe_phrases([
+        *profile.product_affinities,
+        *profile.use_contexts,
+        *profile.obsessions,
+        *profile.hidden_hooks,
+        profile.inferred_persona,
+        payload.brief,
+    ])
+
+
+def _profile_avoidance_phrases(profile: PsychologicalProfile) -> list[str]:
+    return _dedupe_phrases([
+        *profile.product_avoidances,
+        *profile.aversions,
+        *profile.gifting_risks,
+    ])
+
+
+def _signal_phrase_score(phrases: list[str], product_text: str, product_tokens: set[str], weight: int = 2) -> int:
+    score = 0
+    lowered_text = product_text.lower()
+    for phrase in phrases[:10]:
+        lowered_phrase = phrase.lower()
+        phrase_tokens = tokenize_text(phrase)
+        if lowered_phrase and lowered_phrase in lowered_text:
+            score += max(weight + 1, len(phrase_tokens))
+            continue
+        overlap = len(phrase_tokens & product_tokens)
+        if overlap >= 2:
+            score += weight + overlap
+        elif overlap == 1:
+            score += 1
+    return score
 
 
 def _clean_product_title(title: str) -> str:
@@ -25,39 +74,139 @@ def _clean_product_title(title: str) -> str:
     return cleaned[:140].strip()
 
 
-def _persona_query_hints(text: str) -> list[str]:
-    lowered = text.lower()
-    hints: list[str] = []
+_PERSONA_HINT_RULES: list[tuple[tuple[str, ...], tuple[str, ...]]] = [
+    (("yazılım", "software", "developer", "mühendis", "engineer", "kod", "kodlama"), (
+        "mekanik klavye aksesuarı",
+        "masaüstü üretkenlik aksesuarı",
+        "tech desk setup ürünü",
+    )),
+    (("formula 1", "f1", "otomobil", "araba", "motorsport", "yarış"), (
+        "motorspor temalı masaüstü obje",
+        "formula 1 koleksiyon ürünü",
+        "otomobil tutkunu için teknik hediye",
+    )),
+    (("öğretmen", "teacher", "öğretmenlik", "sınıf", "classroom"), (
+        "öğretmen için masaüstü düzen ürünü",
+        "eğitim odaklı şık kırtasiye",
+        "sınıf dışında günlük kullanım hediyesi",
+    )),
+    (("öğrenci", "student", "üniversite", "college", "campus"), (
+        "öğrenci için masaüstü verimlilik ürünü",
+        "günlük kullanıma uygun bütçe dostu aksesuar",
+        "çalışma masası organizasyon ürünü",
+    )),
+    (("doktor", "hekim", "cerrah", "tıp", "medical"), (
+        "doktor için işlevsel butik hediye",
+        "masaüstü kullanımına uygun şık aksesuar",
+        "yoğun tempoya uygun pratik ürün",
+    )),
+    (("mimar", "architect", "iç mimar", "industrial designer", "tasarımcı", "designer", "grafik"), (
+        "tasarım odaklı masaüstü obje",
+        "estetik ve işlevsel ofis aksesuarı",
+        "yaratıcı profesyonel için butik ürün",
+    )),
+    (("oyun", "gamer", "gaming", "esports", "steam", "konsol"), (
+        "oyuncu masaüstü aksesuarı",
+        "gaming setup ürünü",
+        "esports temalı kullanışlı hediye",
+    )),
+    (("fotoğraf", "photography", "kamera", "camera", "içerik üretici", "content creator", "video"), (
+        "fotoğrafçı için masaüstü ekipmanı",
+        "içerik üreticisi aksesuarı",
+        "kamera düzenleme ürünü",
+    )),
+    (("kitap", "reader", "roman", "edebiyat", "literature", "okumayı"), (
+        "kitap sever için okuma aksesuarı",
+        "edebiyat temalı butik hediye",
+        "kitaplık yanında kullanılabilecek obje",
+    )),
+    (("kahve", "coffee", "çay", "tea", "barista"), (
+        "kahve ritüeline eşlik eden aksesuar",
+        "çalışma molalarına uygun şık ürün",
+        "kahve sever için butik masaüstü ürünü",
+    )),
+    (("müzik", "music", "gitar", "piyano", "vinyl", "plak", "kulaklık"), (
+        "müzik tutkunu için masaüstü aksesuar",
+        "ses ekipmanı odaklı ürün",
+        "müzik temalı butik obje",
+    )),
+    (("spor", "fitness", "gym", "koşu", "run", "pilates", "yoga"), (
+        "aktif yaşam tarzına uygun günlük ürün",
+        "spor sonrası kullanım aksesuarı",
+        "fitness odaklı işlevsel hediye",
+    )),
+    (("seyahat", "travel", "gezgin", "trip", "tatil", "valiz"), (
+        "seyahat dostu organizasyon ürünü",
+        "gezgin için kompakt aksesuar",
+        "günlük taşımaya uygun pratik hediye",
+    )),
+    (("bebek", "anne", "mother", "newborn", "baby", "ebeveyn", "parent"), (
+        "ebeveyn için günlük kullanım ürünü",
+        "bebekli yaşamı kolaylaştıran butik ürün",
+        "anne için işlevsel hediye",
+    )),
+    (("kedi", "köpek", "pet", "evcil hayvan"), (
+        "evcil hayvan sever için günlük aksesuar",
+        "pet temalı butik hediye",
+        "evcil hayvan yaşamına uygun kullanışlı ürün",
+    )),
+    (("minimal", "minimalist", "sade", "clean", "düzenli"), (
+        "minimal tasarımlı masaüstü aksesuar",
+        "sade ama işlevsel hediye",
+        "temiz çizgili dekoratif olmayan ürün",
+    )),
+    (("koleksiyon", "collector", "biriktir", "limited edition", "özel seri"), (
+        "koleksiyonluk butik ürün",
+        "özel seri hediye",
+        "sergilenebilir karakterli obje",
+    )),
+    (("avukat", "lawyer", "hukuk", "legal", "mahkeme", "dava"), (
+        "avukat için masaüstü organizasyon ürünü",
+        "hukuk profesyoneline uygun şık aksesuar",
+        "resmi ama karakterli günlük kullanım hediyesi",
+    )),
+    (("psikolog", "psychologist", "terapist", "therapy", "counselor"), (
+        "psikolog için sakin ve işlevsel masaüstü ürünü",
+        "danışma odasına uygun sade aksesuar",
+        "günlük kullanımda rahatlık sunan butik ürün",
+    )),
+    (("girişimci", "entrepreneur", "startup", "kurucu", "founder"), (
+        "girişimci için masaüstü verimlilik ürünü",
+        "yoğun tempoya uygun pratik aksesuar",
+        "çalışma akışını hızlandıran işlevsel hediye",
+    )),
+    (("akademisyen", "academic", "araştırmacı", "researcher", "profesör", "lecturer"), (
+        "akademisyen için çalışma masası aksesuarı",
+        "araştırma odaklı günlük kullanım ürünü",
+        "okuma ve not alma rutinine uygun hediye",
+    )),
+    (("kamp", "camping", "doğa", "outdoor", "trekking", "karavan"), (
+        "kampçı için taşınabilir aksesuar",
+        "outdoor kullanımına uygun pratik ürün",
+        "doğa odaklı işlevsel hediye",
+    )),
+    (("maker", "arduino", "robotik", "3d printer", "3d yazıcı", "otomasyon", "diy"), (
+        "maker masaüstü ekipmanı",
+        "elektronik proje aksesuarı",
+        "robotik ve otomasyon odaklı butik ürün",
+    )),
+]
 
-    if any(term in lowered for term in ["yazılım", "software", "developer", "mühendis", "engineer", "kod", "kodlama"]):
-        hints.extend([
-            "mekanik klavye aksesuarı",
-            "masaüstü üretkenlik aksesuarı",
-            "tech desk setup ürünü",
-            "koleksiyonluk teknoloji objesi",
-        ])
 
-    if any(term in lowered for term in ["formula 1", "f1", "otomobil", "araba", "motorsport", "yarış"]):
-        hints.extend([
-            "motorspor temalı masaüstü obje",
-            "formula 1 koleksiyon ürünü",
-            "otomobil tutkunu için butik ürün",
-        ])
+def _persona_query_hints(payload: InvestigateRequest, profile: PsychologicalProfile) -> list[str]:
+    signal_hints = [
+        *profile.product_affinities[:4],
+        *profile.use_contexts[:3],
+        *profile.hidden_hooks[:2],
+    ]
 
-    if any(term in lowered for term in ["doktor", "hekim", "cerrah", "tıp", "medical"]):
-        hints.extend([
-            "medikal temalı şık masaüstü obje",
-            "doktor için işlevsel butik hediye",
-        ])
+    fallback_hints: list[str] = []
+    lowered = (payload.brief + " " + profile.inferred_persona).lower()
+    for triggers, hints in _PERSONA_HINT_RULES:
+        if any(term in lowered for term in triggers):
+            fallback_hints.extend(hints)
 
-    deduped: list[str] = []
-    seen: set[str] = set()
-    for hint in hints:
-        key = hint.lower().strip()
-        if key and key not in seen:
-            seen.add(key)
-            deduped.append(hint)
-    return deduped
+    return _dedupe_phrases([*signal_hints, *fallback_hints])
 
 
 def flatten_search_hits(
@@ -125,7 +274,7 @@ def build_search_queries(
 
     clauses = " ".join(part for part in [region_market, region_hint, region_price] if part)
 
-    persona_hints = _persona_query_hints(base + " " + obsession + " " + hidden_hook)
+    persona_hints = _persona_query_hints(payload, profile)
 
     queries = [
         f"{obsession} hediye ürün satın al {clauses} e ticaret",
@@ -204,7 +353,8 @@ def _candidate_relevance_score(product: ProductCandidate, payload: InvestigateRe
         profile.inferred_persona,
         " ".join(profile.obsessions),
         " ".join(profile.hidden_hooks),
-        " ".join(profile.aversions),
+        " ".join(profile.product_affinities),
+        " ".join(profile.use_contexts),
     ])
     context_tokens = tokenize_text(context)
     product_text = " ".join([
@@ -212,34 +362,50 @@ def _candidate_relevance_score(product: ProductCandidate, payload: InvestigateRe
         product.why_it_matches,
         product.editorial_note,
         " ".join(product.matched_signals),
+        product.comparison_note,
     ])
     product_tokens = tokenize_text(product_text)
 
     score = len(context_tokens & product_tokens) * 2
+    score += _signal_phrase_score(_profile_signal_phrases(payload, profile), product_text, product_tokens, weight=4)
+    score -= _signal_phrase_score(_profile_avoidance_phrases(profile), product_text, product_tokens, weight=2)
 
     lowered_name = product.name.lower()
+    lowered_text = product_text.lower()
     generic_markers = (
         "koleksiyon", "seçki", "secim", "ürün seçkisi", "platformu", "kategori", "mağaza", "magaza", "seti"
     )
     if any(marker in lowered_name for marker in generic_markers):
         score -= 2
 
+    generic_office_markers = (
+        "mobilya", "koltuk", "dolap", "raf", "çalışma masası", "ofis mobilya", "network kablo", "bağlantı kablosu"
+    )
+    if any(marker in lowered_name or marker in lowered_text for marker in generic_office_markers):
+        score -= 3
+
     role_text = payload.brief.lower()
     if any(term in role_text for term in ["yazılım", "developer", "software", "kod", "mühendis"]):
-        preferred = ("klavye", "keyboard", "desk", "masa", "switch", "teknoloji", "aksesuar", "monitor", "stand", "dock")
+        preferred = (
+            "klavye", "keyboard", "desk", "switch", "teknoloji", "aksesuar", "monitor", "stand", "dock",
+            "wrist rest", "bilek", "desk mat", "mousepad", "hub", "usb", "cable management", "kablo yönetim"
+        )
         discouraged = ("bardak", "kupa", "tabak", "mutfak", "termos", "vazo", "mum")
         if any(marker in lowered_name for marker in preferred):
             score += 4
         if any(marker in lowered_name for marker in discouraged):
-            score -= 6
+            score -= 5
+
+    if any(term in role_text for term in ["formula 1", "f1", "otomobil", "motorspor", "yarış", "mclaren", "ferrari"]):
+        motorsport_preferred = ("formula", "f1", "motorspor", "yarış", "sim", "lego", "model", "kitap", "telemetry", "engineering")
+        if any(marker in lowered_name or marker in lowered_text for marker in motorsport_preferred):
+            score += 3
 
     kind = classify_shopping_hit_kind(str(product.url), product.name, product.why_it_matches)
     if kind == 'direct_product':
         score += 3
     elif kind == 'collection':
         score -= 1
-    elif kind in {'boutique_store', 'editorial_pick'}:
-        score += 0
 
     return score
 

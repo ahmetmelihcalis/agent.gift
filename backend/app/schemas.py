@@ -15,6 +15,9 @@ class PsychologicalProfile(BaseModel):
     hidden_hooks: list[str]
     gifting_risks: list[str]
     tone_notes: str
+    product_affinities: list[str] = Field(default_factory=list)
+    product_avoidances: list[str] = Field(default_factory=list)
+    use_contexts: list[str] = Field(default_factory=list)
 
 
 class AgentDescriptor(BaseModel):

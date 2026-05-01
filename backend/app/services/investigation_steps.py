@@ -229,6 +229,10 @@ Kurallar:
 - Kişinin açıkça söylemediği eğilimleri dikkatle çıkar.
 - "obsessions", "aversions" ve "hidden_hooks" alanlarına kısa, net ve kulağa doğal gelen ifadeler yaz.
 - Psikolojik analiz tonuna kaçıp ağdalı cümleler kurma; gözlemci ve yerinde kal.
+- `product_affinities` alanına bu kişinin hediye olarak en çok uyacağı ürün eksenlerini yaz.
+- `product_avoidances` alanına bu profile uzak duran ürün eksenlerini yaz.
+- `use_contexts` alanına ürünün hangi günlük kullanım bağlamlarında anlamlı olacağını yaz.
+- Bu üç alanda genel ve yeniden kullanılabilir sinyaller üret; tek marka veya tek ürün ismi yazma.
 
 JSON şeması:
 {{
@@ -237,7 +241,10 @@ JSON şeması:
   "aversions": ["string"],
   "hidden_hooks": ["string"],
   "gifting_risks": ["string"],
-  "tone_notes": "string"
+  "tone_notes": "string",
+  "product_affinities": ["string"],
+  "product_avoidances": ["string"],
+  "use_contexts": ["string"]
 }}
 """
     response = await llm.ainvoke(prompt)
@@ -297,7 +304,7 @@ Kurallar:
 - Blog, forum, sosyal medya, haber sitesi veya mağaza dışı editoryal içerik sitesi kullanma.
 - Mümkün olduğunda doğrudan ürün sayfasını tercih et.
 - Doğrudan ürün yoksa sırasıyla koleksiyon sayfası, butik mağaza sayfası ve mağazanın editör seçkisi sayfasını fallback olarak kullanabilirsin.
-- Seçtiğin adaylar kullanıcının seçtiği bütçe ve bölge kısıtına mümkün olduğunca uysun.
+- Seçtiğin adaylar kullanıcının verdiği yönlendirme sinyaline ve profile mümkün olduğunca uysun.
 - Arama filtresi içeren sayfaları kullanma.
 - Eğer kullandığın bağlantı tek bir ürüne değil, koleksiyon ya da liste sayfasına açılıyorsa ürün adı uydurma.
 - Böyle durumlarda `name` alanı sayfanın gerçekten sunduğu ürün grubunu ya da koleksiyon başlığını yansıtsın.
@@ -418,7 +425,7 @@ Kurallar:
 - Mümkün olduğunda üç ürün üç farklı kaynaktan gelsin; aynı siteyi yalnızca gerçekten güçlü bir gerekçe varsa tekrar kullan.
 - Alışveriş sitesi dışındaki hiçbir kaynağı kullanma.
 - Doğrudan ürün linki yoksa yalnızca mevcut aday havuzundaki koleksiyon, butik mağaza veya editör seçkisi fallbacklerini kullan.
-- Seçimlerinde kullanıcının bütçe ve bölge tercihini koru.
+- Seçimlerinde kullanıcının yönlendirme sinyalini ve profil önceliklerini koru.
 - Her ürün için `candidate_index` ver ve yalnızca mevcut adaylardan seçim yap.
 - Yeni ürün uydurma, link değiştirme, kaynak değiştirme.
 - Eğer aday bağlantısı tekil ürün değil de koleksiyon/liste sayfasıysa, bunu tek bir spesifik ürünmüş gibi anlatma.

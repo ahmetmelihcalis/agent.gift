@@ -109,21 +109,6 @@ def flatten_search_hits(
     return hits
 
 
-def _budget_terms(budget: str | None) -> tuple[str, str]:
-    normalized = (budget or "").strip().lower()
-    if not normalized:
-        return "", ""
-
-    if "0-1000" in normalized or "1000 tl" in normalized and "3000" not in normalized:
-        return "0-1000 TL bütçe", "uygun fiyatlı"
-    if "1000-3000" in normalized:
-        return "1000-3000 TL bütçe", "orta segment"
-    if "3000+" in normalized or "3000" in normalized:
-        return "3000 TL üzeri bütçe", "üst segment"
-
-    return budget.strip(), ""
-
-
 
 
 def build_search_queries(
@@ -133,10 +118,9 @@ def build_search_queries(
     obsession = profile.obsessions[0] if profile.obsessions else base
     hidden_hook = profile.hidden_hooks[0] if profile.hidden_hooks else base
     aversion = profile.aversions[0] if profile.aversions else ""
-    budget_primary, budget_style = _budget_terms(payload.budget)
     region_market, region_hint, region_price = ("Türkiye online alışveriş sitesi", "site:.tr", "TL fiyat")
 
-    clauses = " ".join(part for part in [budget_primary, budget_style, region_market, region_hint, region_price] if part)
+    clauses = " ".join(part for part in [region_market, region_hint, region_price] if part)
 
     persona_hints = _persona_query_hints(base + " " + obsession + " " + hidden_hook)
 
@@ -146,7 +130,7 @@ def build_search_queries(
         f"{base} koleksiyon hediye ürün {clauses} online mağaza",
         f"{base} mağaza editör seçkisi hediye {clauses}",
         f"{base} özgün hediye ürün {clauses} online store",
-        f"{base} gift product shop {budget_primary} {region_market} {region_hint}".strip(),
+        f"{base} gift product shop {region_market} {region_hint}".strip(),
     ]
 
     for hint in persona_hints:
@@ -154,7 +138,7 @@ def build_search_queries(
 
     if aversion:
         queries.append(
-            f"{base} klişe olmayan hediye ürün {budget_primary} {region_market} {aversion} olmasın"
+            f"{base} klişe olmayan hediye ürün {region_market} {aversion} olmasın"
         )
 
     deduped: list[str] = []

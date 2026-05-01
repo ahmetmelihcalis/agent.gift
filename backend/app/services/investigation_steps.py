@@ -125,7 +125,7 @@ def build_fallback_result_payload(
         "profile_summary": profile_summary,
         "editorial_intro": editorial_intro,
         "markdown": markdown,
-        "tone_mode": request_payload.tone_mode or filters["tone_mode"],
+        "tone_mode": filters["tone_mode"],
         "applied_filters": filters,
         "profile_snapshot": profile.model_dump(mode="json"),
         "agents": [agent.model_dump(mode="json") for agent in agents],

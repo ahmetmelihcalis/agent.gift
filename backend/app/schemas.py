@@ -5,10 +5,6 @@ from pydantic import BaseModel, Field, HttpUrl
 
 class InvestigateRequest(BaseModel):
     brief: str = Field(min_length=10, description="Gift investigation prompt from the user.")
-    budget: str | None = None
-    delivery_speed: str | None = None
-    tone_mode: str | None = None
-    avoid_categories: list[str] = Field(default_factory=list)
     refine_instruction: str | None = None
 
 

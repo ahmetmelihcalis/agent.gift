@@ -1,10 +1,10 @@
 # agent.gift
 
-A multi-agent gift discovery app that turns a short profile brief into personalized gift recommendations.
+A multi-agent gift discovery project that turns a short profile brief into personalized gift recommendations.
 
 ---
 
-## Table of Contents / İçindekiler
+## İçindekiler / Table of Contents 
 - [Türkçe](#türkçe)
   - [Proje Özeti](#proje-özeti)
   - [Özellikler](#özellikler)
@@ -174,7 +174,7 @@ The system works in three basic steps:
 ## Tech Stack
 ### Backend
 - FastAPI, Pydantic, SSE Starlette
-- LangChain adapters (`langchain-openai`, `langchain-tavily`)
+- LangChain Adapters (`langchain-openai`, `langchain-tavily`)
 - Tavily Search API
 ### Frontend
 - Next.js 14, React 18, TypeScript, Tailwind CSS

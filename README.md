@@ -30,7 +30,7 @@ A multi-agent gift discovery project that turns a short profile brief into perso
 # Türkçe
 
 ## Proje Özeti
-`agent.gift`, kullanıcıdan alınan kısa bir profil tarifine göre kişiselleştirilmiş hediye önerileri üreten çok ajanlı çalışan bir hediye keşif uygulamasıdır.
+`agent.gift`, kullanıcıdan alınan kısa bir profil tarifine göre kişiselleştirilmiş hediye önerileri üreten çok ajanlı çalışan bir hediye keşif projesidir.
 
 Sistem üç temel adımda çalışır:
 1. **Profili Çözümler:** Kullanıcının verdiği bilgileri analiz eder.
@@ -158,7 +158,7 @@ Bu proje, 3 ajandan oluşan çoklu ajan mimarisiyle çalışır. Aşağıdaki aj
 # English
 
 ## Project Overview
-`agent.gift` is a multi-agent gift discovery application that generates personalized gift recommendations based on a short profile description received from the user.
+`agent.gift` is a multi-agent gift discovery project that generates personalized gift recommendations based on a short profile description received from the user.
 
 The system works in three basic steps:
 1. **Interprets Profile:** Analyzes the information provided by the user.
